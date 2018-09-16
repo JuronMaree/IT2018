@@ -979,63 +979,34 @@ VALUES(2018, 3, 1, 2, 1, 53);
 
 
 /*EXTRACT*/
-SELECT sem_num, EXTRACT (Month form start_date)
+SELECT sem_num, EXTRACT (Month from start_date)
 FROM SEMESTER_DIM
 WHERE start_date BETWEEN TO_DATE('02/Feb/2018') AND TO_DATE('02/JUL/2018');
 
-SELECT sem_num, EXTRACT (Month form end_date)
+SELECT sem_num, EXTRACT (Month from end_date)
 FROM SEMESTER_DIM
 WHERE start_date BETWEEN TO_DATE('03/JUL/2018') AND TO_DATE('13/NOV/2018');
 
 /*FILTER Committees*/
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE committee_code = 1
-ORDER BY committee_code DESC
-GROUP BY res_code ;
 
 SELECT res_code, committee_code, total_num_students
 FROM STUDENT_FACT
-WHERE committee_code =2
-ORDER BY committee_code DESC
-GROUP BY res_code ;
+WHERE res_code = &res_code
+ORDER BY committee_code DESC;
 
 SELECT res_code, committee_code, total_num_students
 FROM STUDENT_FACT
-WHERE committee_code = 3
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
+WHERE committee_code = &committee_code
+ORDER BY committee_code DESC;
 
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE committee_code = 4
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
 
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE committee_code = 5
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
-
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE committee_code = 6
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
-
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE committee_code = 7
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
 
 /*SUM of STUDENTS IN RES*/
 SELECT  committee_code, SUM(total_num_students)
 FROM STUDENT_FACT
-WHERE committee_code LIKE (1,2,3,4,5,6,7)
+WHERE committee_code (1,2,3,4,5,6,7)
 ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
+GROUP BY res_code,committee_code ;
 
 /*SUM of STUDENTS IN RES*/
 SELECT  res_code, SUM(total_num_students)
