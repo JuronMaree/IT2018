@@ -1,15 +1,15 @@
 /* DROP*/
 DROP TABLE COMMITTEE_DIM;
 DROP TABLE SEMESTER_DIM;
-DROP TABLE RESIDENCE_DIM;
+DROP TABLE RESIDENCE_DIM;/*Werk nie*/
 DROP TABLE CAMPUS_DIM;
-DROP TABLE EVENT_DIM;
-DROP TABLE STUDENT_DIM;
+DROP TABLE EVENT_DIM;/*Werk nie*/
+DROP TABLE STUDENT_DIM;/*Werk nie*/
 DROP TABLE ATTENDANCE_FACT;
 DROP TABLE STUDENT_FACT;
 DROP TABLE EVENT_TYPE_FACT;
 DROP TABLE EVENT_FACT;
-DROP TABLE STUDENT_FACT;
+DROP TABLE STUDENTS_FACT;
 DROP SEQUENCE committee_committee_code_seq;
 DROP SEQUENCE sem_sem_num_seq;
 DROP SEQUENCE res_res_code_seq;
@@ -30,7 +30,7 @@ end_date DATE);
 
 CREATE TABLE RESIDENCE_DIM(
 res_code NUMBER(6) CONSTRAINT res_res_code PRIMARY KEY,
-res_decription VARCHAR(20));
+res_descript VARCHAR(20));
 
 CREATE TABLE CAMPUS_DIM(
 campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
@@ -41,40 +41,40 @@ event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code PRIMARY KEY,
 event_description VARCHAR(20));
 
 CREATE TABLE STUDENT_DIM(
-student_num NUMBER(6) CONSTRAINT student_student_num PRIMARY KEY,
+student_num NUMBER(6) CONSTRAINT stud_student_num PRIMARY KEY,
 student_fname VARCHAR(25),
 student_lname VARCHAR(25));
 
 
 /* FACT */
 CREATE TABLE ATTENDANCE_FACT(
-year_year NUMBER(6) CONSTRAINT year_year PRIMARY KEY,
+year_year NUMBER(6),
 sem_num NUMBER(6) CONSTRAINT sem_sem_num1 REFERENCES SEMESTER_DIM(sem_num),
 res_code NUMBER(6) CONSTRAINT res_res_code1 REFERENCES RESIDENCE_DIM(res_code),
 event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code1 REFERENCES EVENT_DIM(event_type_code),
 committee_code NUMBER(6) CONSTRAINT committee_committee_code1 REFERENCES COMMITTEE_DIM(committee_code),
-percentage_attendance NUMBER(3));
+percentage_attendance NUMBER(3), PRIMARY KEY(year_year, sem_num, res_code, event_type_code, committee_code ));
 
 CREATE TABLE STUDENT_FACT(
-year_year NUMBER(4) CONSTRAINT year_year2 PRIMARY KEY,
+year_year NUMBER(4),
 committee_code NUMBER(6) CONSTRAINT committee_committee_code2 REFERENCES COMMITTEE_DIM(committee_code),
 res_code NUMBER(6) CONSTRAINT res_res_code2 REFERENCES RESIDENCE_DIM(res_code),
-total_num_students NUMBER(3));
+total_num_students NUMBER(3),PRIMARY KEY(year_year, committee_code, res_code));
 
 CREATE TABLE EVENT_TYPE_FACT(
-year_year NUMBER(6) CONSTRAINT year_year3 PRIMARY KEY,
+year_year NUMBER(6),
 sem_num NUMBER(6) CONSTRAINT sem_sem_num3 REFERENCES SEMESTER_DIM(sem_num),
 campus_code NUMBER(6) CONSTRAINT campus_campus_code3 REFERENCES CAMPUS_DIM(campus_code),
 event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code3 REFERENCES EVENT_DIM(event_type_code),
-total_events NUMBER(4));
+total_events NUMBER(4), PRIMARY KEY(year_year, sem_num, campus_code, event_type_code));
 
 CREATE TABLE EVENT_FACT(
-year_year NUMBER(6) ,
-month_month NUMBER(6)  ,
+year_year NUMBER(6),
+month_month NUMBER(6),
 event_type_code NUMBER(6) CONSTRAINT type_code4 REFERENCES EVENT_DIM(event_type_code),
 res_code NUMBER(6) CONSTRAINT res_res_code4 REFERENCES RESIDENCE_DIM(res_code),
-total_num_students_att_ev NUMBER(6),
-total_events_students_att NUMBER(3),PRIMARY KEY(year_year, month_month));
+tot_stu_attend_event NUMBER(6),
+tot_events_stu_attend NUMBER(3),PRIMARY KEY(year_year, month_month,event_type_code,res_code));
 
 CREATE TABLE STUDENTS_FACT(
 year_year NUMBER(6) ,
@@ -82,7 +82,7 @@ month_month NUMBER(6),
 res_code NUMBER(6) CONSTRAINT res_res_code5 REFERENCES RESIDENCE_DIM(res_code),
 event_type_code NUMBER(6) CONSTRAINT ent_type_ev_type_c REFERENCES EVENT_DIM(event_type_code),
 student_num NUMBER(6) CONSTRAINT stnt_student_num5 REFERENCES STUDENT_DIM(student_num),
-total_students_in_res NUMBER(3),PRIMARY KEY(year_year, month_month));
+total_students_in_res NUMBER(3),PRIMARY KEY(year_year, month_month, res_code, event_type_code, student_num));
 
 
 /* SEQUENCES */
@@ -164,16 +164,16 @@ VALUES(committee_committee_code_seq.NEXTVAL, 'Academic');
 
 
 /*Different Residences*/
-INSERT INTO RESIDENCE_DIM(res_code, res_description)
+INSERT INTO RESIDENCE_DIM(res_code, res_descript)
 VALUES(res_res_code_seq.NEXTVAL, 'Caput');
 
-INSERT INTO RESIDENCE_DIM(res_code, res_description)
+INSERT INTO RESIDENCE_DIM(res_code, res_descript)
 VALUES(res_res_code_seq.NEXTVAL, 'Hombre');
 
-INSERT INTO RESIDENCE_DIM(res_code, res_description)
+INSERT INTO RESIDENCE_DIM(res_code, res_descript)
 VALUES(res_res_code_seq.NEXTVAL, 'Veritas');
 
-INSERT INTO RESIDENCE_DIM(res_code, res_description)
+INSERT INTO RESIDENCE_DIM(res_code, res_descript)
 VALUES(res_res_code_seq.NEXTVAL, 'Excelsior');
 
 
@@ -197,25 +197,25 @@ VALUES(sem_sem_num_seq.NEXTVAL, TO_DATE('03/JUL/2018'), TO_DATE('13/NOV/2018'));
 
 
 /*Different Student info*/
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Juron', 'Maree');
 
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Jan', 'Lous');
 
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Martin', 'Jacobs');
 
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Pieter', 'Brits');
 
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Steven', 'Herbs');
 
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Levi', 'Goerge');
 
-INSERT INTO STUDENT_DIM(student_num, student_fname, student_name)
+INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
 VALUES(student_student_num_seq.NEXTVAL, 'Len', 'PC');
 
 /*Different Events sport*/
@@ -249,7 +249,7 @@ VALUES(event_type_event_type_code_seq.NEXTVAL, 'Residence stall');
 
 /*Different Events Social*/
 INSERT INTO EVENT_DIM(event_type_code, event_description)
-VALUES(event_type_event_type_code_seq.NEXTVAL, 'Father and son weekend');
+VALUES(event_type_event_type_code_seq.NEXTVAL, 'FatherSon weekend');
 
 INSERT INTO EVENT_DIM(event_type_code, event_description)
 VALUES(event_type_event_type_code_seq.NEXTVAL, 'Engagement social');
@@ -408,8 +408,8 @@ VALUES(2018, 7, 3, 59);
 INSERT INTO STUDENT_FACT(year_year, committee_code, res_code, total_num_students)
 VALUES(2018, 7, 4, 33);
 
-/*ATTENDANCE_FACT*/
 
+/*ATTENDANCE_FACT*/
 /*Attendance for Sport*/
 /*Caput, Hockey, Sport*/
 INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
@@ -559,4 +559,419 @@ VALUES(2018, 1, 4, 3, 2, 0.4);
 /*Attendance for Social*/
 /*Caput, Father&Son, Social*/
 INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
-VALUES(2018, 1, 4, 3, 2, 0.4);
+VALUES(2018, 1, 1, 1, 3, 0.5);
+
+/*Hombre, Father&Son, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 1, 3, 0.3);
+
+/*Veritas, Father&Son, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 1, 3, 0.7);
+
+/*Excelsior, Father&Son, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 1, 3, 0.5);
+
+/*Caput, Engagement, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 2, 3, 0.10);
+
+/*Hombre, Engagement, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 2, 3, 0.9);
+
+/*Veritas, Engagement, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 2, 3, 0.5);
+
+/*Excelsior, Engagement, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 2, 3, 0.10);
+
+/*Caput, Marriage, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 3, 3, 0.10);
+
+/*Hombre, Marriage, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 3, 3, 0.10);
+
+/*Veritas, Marriage, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 3, 3, 0.9);
+
+/*Excelsior, Marriage, Social*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 3, 3, 0.7);
+
+/*Attendance for Kulture*/
+/*Caput, Ser, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 1, 1, 4, 0.7);
+
+/*Hombre, Ser, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 1, 4, 0.10);
+
+/*Veritas, Ser, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 1, 4, 0.3);
+
+/*Excelsior, Ser, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 1, 4, 0.5);
+
+/*Caput, Play, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 1, 2, 4, 0.9);
+
+/*Hombre, Play, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 2, 4, 0.10);
+
+/*Veritas, Play, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 2, 4, 0.4);
+
+/*Excelsior, Play, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 2, 4, 0.6);
+
+/*Caput, Debate, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 1, 3, 4, 0.9);
+
+/*Hombre, Debate, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 3, 4, 0.5);
+
+/*Veritas, Debate, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 3, 4, 0.10);
+
+/*Excelsior, Debate, Kulture*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 3, 4, 0.6);
+
+/*Attendance for SJGD*/
+/*Caput, Barefoot, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 1, 5, 0.4);
+
+/*Hombre, Barefoot, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 1, 5, 0.7);
+
+/*Veritas, Barefoot, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 1, 5, 0.10);
+
+/*Excelsior, Barefoor, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 1, 5, 0.5);
+
+/*Caput, School, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 2, 5, 0.7);
+
+/*Hombre, School, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 2, 5, 0.5);
+
+/*Veritas, School, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 2, 5, 0.10);
+
+/*Excelsior, School, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 2, 5, 0.9);
+
+/*Caput, Can-Food, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 3, 5, 0.5);
+
+/*Hombre, Can-Food, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 3, 5, 0.8);
+
+/*Veritas, Can-Food, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 3, 5, 0.8);
+
+/*Excelsior, Can-Food, SJGD*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 3, 5, 0.5);
+
+
+/*Attendance for RAG*/
+/*Caput, Float, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 1, 1, 6, 0.8);
+
+/*Hombre, Float, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 1, 6, 0.5);
+
+/*Veritas, Float, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 1, 6, 0.10);
+
+/*Excelsior, Float, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 1, 6, 0.8);
+
+/*Caput, Fin, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 1, 2, 6, 0.10);
+
+/*Hombre, Fin, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 2, 6, 0.5);
+
+/*Veritas, Fin, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 2, 6, 0.7);
+
+/*Excelsior, Fin, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 2, 6, 0.10);
+
+/*Caput, Game, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 3, 6, 0.8);
+
+/*Hombre, Game, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 3, 6, 0.4);
+
+/*Veritas, Game, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 3, 6, 0.6);
+
+/*Excelsior, Game, RAG*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 3, 6, 0.6);
+
+/*Attendance for Academic*/
+/*Caput, Spelling-B, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 1, 1, 7, 0.7);
+
+/*Hombre, Spelling-B, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 2, 1, 7, 0.10);
+
+/*Veritas, Spelling-B, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 3, 1, 7, 0.4);
+
+/*Exceslior, Spelling-B, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 1, 4, 1, 7, 0.10);
+
+/*Caput, Academic-night, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 1, 2, 7, 0.3);
+
+/*Hombre, Academic-night, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 2, 2, 7, 0.6);
+
+/*Veritas, Academic-night, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 3, 2, 7, 0.10);
+
+/*Excelsior, Academic-night, Academic*/
+INSERT INTO ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)
+VALUES(2018, 2, 4, 2, 7, 0.5);
+
+
+/*EVENT_TYPE_FACT*/
+/*Event Sport, NWU Potch, Hockey*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 1, 1, 10);
+
+/*Event Sport, NWU Vaal, Hockey*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 2, 1, 10);
+
+/*Event Sport, NWU Mafekeng, Hockey*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 3, 1, 10);
+
+/*Event Sport, NWU Potch, Cricket*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 1, 2, 5);
+
+/*Event Sport, NWU Vaal, Cricket*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 2, 2, 5);
+
+/*Event Sport, NWU Mafekeng, Cricket*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 3, 2, 5);
+
+/*Event Sport, NWU Potch, Rugby*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 1, 3, 20);
+
+/*Event Sport , NWU Vaal, Rugby*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 2, 3, 20);
+
+/*Event Sport, NWU Mafekeng, Rugby*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 1, 3, 3, 20);
+
+/*Event Sport, NWU Potch, Tennis*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 1, 4, 2);
+
+/*Event Sport, NWU Vaal, Tennis*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 2, 4, 2);
+
+/*Event Sport, NWU Mafekeng, Tennis*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 3, 4, 2);
+
+/*Event Sport, NWU Potch, Squash*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 1, 5, 5);
+
+/*Event Sport, NWU Vaal, Squash*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 2, 5, 5);
+
+/*Event Sport, NWU Mafekeng, Squash*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 3, 5, 5);
+
+/*Event Sport, NWU Potch, Soccer*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 1, 6, 15);
+
+/*Event Sport, NWU Vaal, Soccer*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 2, 6, 15);
+
+/*Event Sport, NWU Mafekeng, Soccer*/
+INSERT INTO EVENT_TYPE_FACT(year_year, sem_num, campus_code, event_type_code, total_events)
+VALUES(2018, 2, 3, 6, 15);
+
+
+
+
+
+/*EVENT_FACT*/
+/*Events Sport, Feb, Hockey, Caput*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 2, 1, 1, 22, 6);
+
+/*Events Sport, Feb, Hockey, Hombre*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 2, 1, 2, 19, 6);
+
+/*Events Sport, Feb, Hockey, Veritas*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 2, 1, 3, 31, 8);
+
+/*Events Sport, Feb, Hockey, Excelsior*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 2, 1, 4, 26, 7);
+
+/*Events Sport, April, Cricket, Caput*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 4, 2, 1, 36, 5);
+
+/*Events Sport, April, Cricket, Hombre*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 4, 2, 2, 22, 5);
+
+/*Events Sport, April, Cricket, Veritas*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 4, 2, 3, 18, 4);
+
+/*Events Sport, April, Cricket, Excelsior*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 4, 2, 4, 26, 5);
+
+/*Events Sport, June, Rugby, Caput*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 6, 3, 1, 40, 20);
+
+/*Events Sport, June, Rugby, Hombre*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 6, 3, 2, 34, 19);
+
+/*Events Sport, June, Rugby, Veritas*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 6, 3, 3, 38, 20);
+
+/*Events Sport, June, Rugby, Excelsior*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 6, 3, 4, 40, 18);
+
+/*Events Sport, July, Tennis, Caput*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 7, 4, 1, 6, 2);
+
+/*Events Sport, July, Tennis, Hombre*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 7, 4, 2, 4, 2);
+
+/*Events Sport, July, Tennis, Veritas*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 7, 4, 3, 6, 2);
+
+/*Events Sport, July, Tennis, Excelsior*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 7, 4, 4, 4, 2);
+
+/*Events Sport, September, Squash, Caput*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 9, 5, 1, 8, 4);
+
+/*Events Sport, September, Squash, Hombre*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 9, 5, 2, 4, 2);
+
+/*Events Sport, September, Squash, Veritas*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 9, 5, 3, 6, 3);
+
+/*Events Sport, September, Squash, Excelsior*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 9, 5, 4, 6, 4);
+
+/*Events Sport, October, Soccer, Caput*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 10, 6, 1, 22, 12);
+
+/*Events Sport, October, Soccer, Hombre*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 10, 6, 2, 18, 15);
+
+/*Events Sport, October, Soccer, Veritas*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 10, 6, 3, 12, 15);
+
+/*Events Sport, October, Soccer, Excelsior*/
+INSERT INTO EVENT_FACT(year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+VALUES(2018, 10, 6, 4, 20, 13);
+
+
+/*STUDENTS_FACT*/
+/*Feb, Caput, Hockey, Juron*/
+INSERT INTO STUDENTS_FACT(year_year, month_month, res_code, event_type_code, student_num, total_students_in_res)
+VALUES(2018, 2, 1, 1, 1, 20);
+
+/*Feb, Hombre, Hockey, Jan*/
+INSERT INTO STUDENTS_FACT(year_year, month_month, res_code, event_type_code, student_num, total_students_in_res)
+VALUES(2018, 2, 2, 1, 2, 11);
+
+/*March, Caput, Cricket, Juron*/
+INSERT INTO STUDENTS_FACT(year_year, month_month, res_code, event_type_code, student_num, total_students_in_res)
+VALUES(2018, 3, 1, 2, 1, 53);
+
