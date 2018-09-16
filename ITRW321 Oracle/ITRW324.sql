@@ -976,6 +976,8 @@ INSERT INTO STUDENTS_FACT(year_year, month_month, res_code, event_type_code, stu
 VALUES(2018, 3, 1, 2, 1, 53);
 
 
+
+
 /*EXTRACT*/
 SELECT sem_num, EXTRACT (Month form start_date)
 FROM SEMESTER_DIM
