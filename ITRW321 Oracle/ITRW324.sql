@@ -1000,72 +1000,150 @@ WHERE committee_code = &committee_code
 ORDER BY committee_code DESC;
 
 
+/*SUM of STUDENTS IN RES*/
+SELECT  TO_CHAR(res_code) As " RES CODE", SUM(total_num_students) AS " SumOfStudents"
+From student_fact
+GROUP BY TO_CHAR(res_code)
+HAVING SUM(total_num_students) > 50;
+
+SELECT  res_code, committee_code, total_num_students
+FROM STUDENT_FACT
+WHERE total_num_students > 10
+ORDER BY  committee_code DESC;
+
+
 
 /*SUM of STUDENTS IN RES*/
-SELECT  committee_code, SUM(total_num_students)
-FROM STUDENT_FACT
-WHERE committee_code (1,2,3,4,5,6,7)
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code,committee_code ;
+/*GROUP BY AND TO_CHAR*/
+SELECT SUM(total_num_students) AS totalStudents
+FROM student_fact 
+Where res_code BETWEEN 1 AND 2 
+GROUP By TO_CHAR(committee_code)
+Order by totalStudents DESC;
 
-/*SUM of STUDENTS IN RES*/
-SELECT  res_code, SUM(total_num_students)
+SELECT SUM(total_num_students)
+FROM student_fact Where res_code = 1;
+SELECT SUM(total_num_students)
+FROM student_fact Where res_code = 2 ;
+SELECT SUM(total_num_students)
+FROM student_fact Where res_code = 3 ;
+SELECT SUM(total_num_students)
+FROM student_fact Where res_code = 4 ;
+
+/*Average Students <50*/
+SELECT Avg(total_num_students) AS "Average studente"
+From student_fact 
+WHERE total_num_students > 50;
+
+/* Studente Grooter as Average in die residence*/
+SELECT  *
 FROM STUDENT_FACT
-WHERE res_code LIKE (1,2,3,4)
-ORDER BY res_code DESC, total_num_students
-GROUP BY committee_code ;
+WHERE total_num_students > (SELECT Avg(total_num_students) 
+                         From student_fact 
+                            WHERE res_code Between 1 AND 4) 
+ORDER BY res_code;
 
 /*Average of STUDENTS IN RES*/
-SELECT  res_code, AVG(total_num_students)
+SELECT  *
 FROM STUDENT_FACT
-WHERE res_code LIKE (1,2,3,4)
-ORDER BY res_code DESC, total_num_students
-GROUP BY committee_code ;
+WHERE total_num_students < (SELECT Avg(total_num_students) AS "AVERAGE STUDENTS" 
+                         From student_fact 
+                            WHERE res_code BETWEEN 1 AND 4 ) 
+ORDER BY res_code DESC, total_num_students;
 
-/*Average of STUDENTS IN RES*/
-SELECT  committee_code, AVG(total_num_students)
+/*AVERAGE*/
+SELECT  *
 FROM STUDENT_FACT
-WHERE committee_code LIKE (1,2,3,4,5,6,7)
-ORDER BY committee_code DESC, total_num_students
-GROUP BY res_code ;
+WHERE res_code =1 AND total_num_students < (SELECT Avg(total_num_students) AS "AVERAGE STUDENTS" 
+                         From student_fact 
+                            WHERE total_num_students < 30 ) 
+ORDER BY res_code DESC, total_num_students;
+
+/*ROUND FUNCTION*/
+SELECT ROUND(AVG(total_num_students)) FROM student_fact WHERE committee_code = 1;
+
+/*COMBINATION*/
+SELECT  committee_code, res_code, total_num_students 
+FROM STUDENT_FACT
+WHERE Committee_code =1 AND  ((SELECT sum(total_num_students) AS "Sum_committee_1"
+                            FROM student_fact
+                            Where committee_code =1) < (SELECT sum(total_num_students) AS "Sum_committee_2"
+                                                    FROM student_fact
+                                                    Where committee_code =2))
+ORDER BY committee_code DESC, total_num_students;
+
 
 /*MAX student*/
 SELECT MAX(total_num_students) AS "Most students"
 FROM STUDENT_FACT;
 
 
+/*COUNT AND SUM*/
+SELECT COUNT(total_students_in_res) As "Amount of Residances", SUM(total_students_in_res) As "Amount of STUDENTS"
+FROM students_fact;
+
 
 /*FILTER Res*/
-SELECT res_code, committee_code, SUM(total_num_students) as totalstudents
-FROM STUDENT_FACT
-WHERE res_code = 1
+SELECT year_year, month_month, res_code, event_type_code, student_num, total_students_in_res
+FROM STUDENTS_FACT 
+WHERE res_code In('3','1')
+ORDER BY event_type_code ;
 
-ORDER BY committee_code ASC
-GROUP BY res_code ;
+/*FILTER VIA MOTHS*/
+SELECT  res_code, event_type_code, student_num, total_students_in_res
+FROM STUDENTS_FACT 
+WHERE month_month < (SELECT AVG(month_month)
+                    FROM STUDENTS_FACT)
+ORDER BY event_type_code ;
 
-SELECT res_code, committee_code, SUM(total_num_students) as totalstudents
-FROM STUDENT_FACT
-WHERE res_code =2
-ORDER BY committee_code ASC
-GROUP BY res_code ;
+/*MAX Students ATTENDED EVENT between the recidence)*/
+SELECT  event_type_code, res_code, tot_stu_attend_event
+FROM EVENT_FACT
+WHERE tot_stu_attend_event = (SELECT MAX(tot_stu_attend_event)
+                            FROM EVENT_FACT
+                            WHERE event_type_code In('1','2','3','4','5','6'))
+ORDER BY event_type_code;
 
-SELECT res_code, committee_code, SUM(total_num_students) as totalstudents
-FROM STUDENT_FACT
-WHERE res_code = 3
-ORDER BY committee_code ASC
-GROUP BY res_code ;
+SELECT  event_type_code, res_code, tot_stu_attend_event
+FROM EVENT_FACT
+WHERE tot_stu_attend_event = (SELECT MIN(tot_stu_attend_event)
+                            FROM EVENT_FACT
+                            WHERE event_type_code In('1','2','3','4','5','6'))
+ORDER BY event_type_code;
 
-SELECT committee_code, SUM(total_num_students) as totalstudents
-FROM STUDENT_FACT
-WHERE res_code = 4
-ORDER BY committee_code ASC
-GROUP BY res_code ;
+SELECT COUNT(event_type_code) AS "Amount of EVENTS"
+FROM EVENT_FACT
+WHERE res_code in('1', '2' , '3') ;
+
+SELECT COUNT(event_type_code) AS "Amount of EVENTS"
+FROM EVENT_FACT
+WHERE res_code BETWEEN 1 AND 2 ;
+
+SELECT event_type_code, res_code, tot_stu_attend_event
+FROM EVENT_FACT
+WHERE tot_stu_attend_event = (SELECT COUNT(event_type_code) AS "Amount of EVENTS"
+                            FROM EVENT_FACT
+                            WHERE res_code =1 );
+
+
+
+
+/*MAX EVENTS ATTENDED EVENT between the recidence)*/
+SELECT  event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend
+FROM EVENT_FACT
+WHERE tot_events_stu_attend = (SELECT MAX(tot_events_stu_attend)
+                            FROM EVENT_FACT
+                            WHERE event_type_code BETWEEN 1 AND 6)
+ORDER BY event_type_code;
+
+
 
 /*COUNT Committees STATEMENT*/
-SELECT COUNT(comittee_code) As amountofcommittees 
-FROM STUDENT_FACT
-GROUP BY res_code
-HAVING COUNT(committee_code) > 2;
+SELECT TO_CHAR(tot_stu_attend_event), COUNT(month_month) AS "Amount of Months"
+FROM EVENT_FACT
+WHERE tot_stu_attend_event = 22
+GROUP BY TO_CHAR(tot_stu_attend_event)
+HAVING COUNT(month_month) > 2;
 
 /*COUNT events STATEMENT*/
 SELECT COUNT(event_type_code) As amountofevents
@@ -1075,119 +1153,104 @@ HAVING COUNT(event_type_code) > 4;
 
 
 /*All year 2018*/
+
 SELECT *
 FROM STUDENT_FACT
-WHERE year_year = 2018
-GROUP BY tot_num_students
-ORDER BY COUNT(*) DESC;
+WHERE res_CODE = 1
+ORDER BY Committee_Code DESC;
 
 
+/*ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)*/
 /*fILTERING Committees form sport INNER JOIN*/
 SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
 FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 1
-GROUP BY STUDENT_FACT.committe_code;
+WHERE STUDENT_FACT.committee_code = 1;
+
 
 SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
 FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 2
-GROUP BY STUDENT_FACT.committe_code;
+WHERE STUDENT_FACT.committee_code = 2;
 
 SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
 FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 3
-GROUP BY STUDENT_FACT.committe_code;
+WHERE STUDENT_FACT.committee_code = 3;
+
 
 SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
 FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 4
-GROUP BY STUDENT_FACT.committe_code;
+WHERE STUDENT_FACT.committee_code = 4;
+
 
 /*fILTERING Committees form sport*/
-SELECT res_code,event_type_code, sem_num
+SELECT res_code,event_type_code, sem_num, committee_code, percentage_attendance
 FROM ATTENDANCE_FACT 
 WHERE committee_code = 1
-ORDER BY committee_code
-GROUP BY res_code;
+ORDER BY committee_code;
 
-SELECT res_code,event_type_code, sem_num
+SELECT res_code,event_type_code, sem_num, committee_code, percentage_attendance
 FROM ATTENDANCE_FACT 
-WHERE committee_code = 2
-ORDER BY committee_code
-GROUP BY res_code;
+WHERE percentage_attendance > (SELECT AVG(percentage_attendance)
+                                FROM ATTENDANCE_FACT)
+ORDER BY committee_code;
 
-SELECT res_code,event_type_code, sem_num
+
+
+SELECT res_code,event_type_code, sem_num 
 FROM ATTENDANCE_FACT 
-WHERE committee_code = 3
-ORDER BY committee_code
-GROUP BY res_code;
+WHERE committee_code = 3 
+ORDER BY committee_code;
 
-SELECT res_code,event_type_code, sem_num
+
+SELECT res_code,event_type_code, sem_num, committee_code
 FROM ATTENDANCE_FACT 
-WHERE committee_code LIKE (4,5,6)
-ORDER BY committee_code
-GROUP BY res_code;
+WHERE committee_code IN ('4','5','6')
+ORDER BY committee_code;
 
-/*COUNT Committees STATEMENT*/
-SELECT COUNT(event_type_code) As amountofcommittees 
-FROM STUDENT_FACT
-GROUP BY res_code
-HAVING COUNT(committee_code) > 5;
-
-/*FILTER EVENT TYPE*/
-SELECT *
-FROM ATTENDANCE_FACT 
-WHERE event_type code = 1
-ORDER BY  percentage_attendance ASC
-GROUP BY event_type_code, committee_code;
-
-SELECT *
-FROM ATTENDANCE_FACT 
-WHERE event_type code = 2
-ORDER BY  percentage_attendance ASC
-GROUP BY event_type_code, committee_code;
-
-SELECT *
-FROM ATTENDANCE_FACT 
-WHERE event_type code = 3
-ORDER BY  percentage_attendance ASC
-GROUP BY event_type_code, committee_code;
-
-SELECT *
-FROM ATTENDANCE_FACT 
-WHERE event_type code = 4
-ORDER BY  percentage_attendance ASC
-GROUP BY event_type_code, committee_code;
-
-SELECT *
-FROM ATTENDANCE_FACT 
-WHERE event_type code = 5
-ORDER BY  percentage_attendance ASC
-GROUP BY event_type_code, committee_code;
-
-SELECT *
-FROM ATTENDANCE_FACT 
-WHERE event_type code = 6
-ORDER BY  percentage_attendance ASC
-GROUP BY event_type_code, committee_code;
-
-/*Filter semesters group by res_code*/
-SELECT res_code, committee_code, event_type_code
-FROM ATTENDANCE_FACT 
-WHERE sem_num = 1
-ORDER BY committee_code
-GROUP BY res_code;
-
-SELECT res_code, committee_code, event_type_code
-FROM ATTENDANCE_FACT 
-WHERE sem_num = 2
-ORDER BY committee_code
-GROUP BY res_code;
 
 /*MAX Percentages*/
 SELECT MAX(percentage_attendance) AS "Highest Attendance"
 FROM ATTENDANCE_FACT
-WHERE sem_num LIKE (1,2)
-ORDER BY percentage_attendance ASC
-GROUP BY rescode;
+WHERE sem_num = 1
+ORDER BY percentage_attendance ASC;
 
+SELECT SUM(percentage_attendance) AS "SUM of all Attendance"
+FROM ATTENDANCE_FACT
+WHERE sem_num IN ('1','2')
+ORDER BY percentage_attendance ASC;
+
+SELECT *
+FROM ATTENDANCE_FACT
+WHERE (Percentage_attendance = 1) AND (Committee_code= 1);
+
+/*VIEW STATEMENTS*/
+CREATE VIEW ATTENDANCE_VIEW AS
+Select  sem_num, res_code, event_type_code, committee_code, percentage_attendance
+FROM ATTENDANCE_FACT;
+
+SELECT * FROM ATTENDANCE_VIEW;
+
+CREATE VIEW STUDENT_VIEW AS
+Select  year_year, committee_code, res_code, total_num_students
+FROM STUDENT_FACT;
+
+SELECT * FROM STUDENT_VIEW;
+
+
+CREATE VIEW STUDENTS_VIEW AS
+Select year_year, month_month, res_code, event_type_code, student_num, total_students_in_res
+FROM STUDENTS_FACT;
+
+SELECT * FROM STUDENTS_VIEW;
+
+/*UPDATES*/
+UPDATE STUDENTS_FACT
+SET year_year= &year_year , month_month= &month_month , res_code = &res_code, event_type_code = &event_type_code, student_num =&student_num, total_students_in_res=&total_students_in_res
+where month_month = &month_month;
+
+UPDATE STUDENT_FACT
+SET year_year =&year_year, committee_code=&committee_code, res_code=&res_code, total_num_students=&total_num_students
+where month_month = 3;
+
+UPDATE ATTENDANCE_FACT
+SET sem_num= &sem_num, res_code= &res_code, event_type_code=&event_type_code, committee_code=&committee_code, percentage_attendance=&percentage_attendance
+where event_type_code = 3;
