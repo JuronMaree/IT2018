@@ -1,10 +1,10 @@
 /* DROP*/
 DROP TABLE COMMITTEE_DIM;
 DROP TABLE SEMESTER_DIM;
-DROP TABLE RESIDENCE_DIM;/*Werk nie*/
+DROP TABLE RESIDENCE_DIM;
 DROP TABLE CAMPUS_DIM;
-DROP TABLE EVENT_DIM;/*Werk nie*/
-DROP TABLE STUDENT_DIM;/*Werk nie*/
+DROP TABLE EVENT_DIM;
+DROP TABLE STUDENT_DIM;
 DROP TABLE ATTENDANCE_FACT;
 DROP TABLE STUDENT_FACT;
 DROP TABLE EVENT_TYPE_FACT;
@@ -297,6 +297,8 @@ VALUES(event_type_event_type_code_seq.NEXTVAL, 'Academic night');
 
 /*STUDENT_FACT*/
 /*Sport, Caput*/
+INSERT ALL 
+INTO STUDENT_FACT(SELECT )
 INSERT INTO STUDENT_FACT(year_year, committee_code, res_code, total_num_students)
 VALUES(2018, 1, 1, 20);
 
@@ -989,8 +991,12 @@ WHERE start_date BETWEEN TO_DATE('03/JUL/2018') AND TO_DATE('13/NOV/2018');
 
 /*FILTER Committees*/
 
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
+SELECT r.res_descrip, c.committee_decrip, total_num_students
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN committee_dim c
+ON s.committee_code = c.committee_code
 WHERE res_code = &res_code
 ORDER BY committee_code DESC;
 
