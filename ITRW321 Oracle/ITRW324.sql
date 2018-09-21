@@ -16,6 +16,7 @@ DROP SEQUENCE res_res_code_seq;
 DROP SEQUENCE campus_campus_code_seq;
 DROP SEQUENCE event_type_event_type_code_seq;
 DROP SEQUENCE student_student_num_seq;
+drop view STUDENTS_VIEW ;
 
 /* CREATE TABLES */
 /* DIM */
@@ -298,7 +299,14 @@ VALUES(event_type_event_type_code_seq.NEXTVAL, 'Academic night');
 /*STUDENT_FACT*/
 /*Sport, Caput*/
 INSERT ALL 
-INTO STUDENT_FACT(SELECT )
+INTO STUDENT_FACT values(2018,c.committee,r.res_code, t.total_num_students)
+SELECT c.committee_code, r.res_code, t.total_num_students
+from committee_dim c
+join residance_dim r
+on 
+;
+
+
 INSERT INTO STUDENT_FACT(year_year, committee_code, res_code, total_num_students)
 VALUES(2018, 1, 1, 20);
 
@@ -990,15 +998,43 @@ FROM SEMESTER_DIM
 WHERE start_date BETWEEN TO_DATE('03/JUL/2018') AND TO_DATE('13/NOV/2018');
 
 /*FILTER Committees*/
+CREATE VIEW STUDENTS_VIEW AS
+Select f.year_year, f.month_month, r.res_descript, e.event_description, s.student_fname,s.student_lname, f.total_students_in_res
+FROM STUDENTS_FACT f
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code 
+JOIN STUDENT_DIM s
+on f.student_num = s.student_num;
 
-SELECT r.res_descrip, c.committee_decrip, total_num_students
+SELECT * FROM STUDENTS_VIEW;
+
+SELECT r.res_descript, c.committee_description, s.total_num_students
 FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
 on s.res_code = r.res_code
-JOIN committee_dim c
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code;
+/*WHERE r.res_descript LIKE &res_descript;
+ORDER BY committee_code DESC;*/
+
+SELECT r.res_descript, c.committee_description, s.total_num_students
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
 ON s.committee_code = c.committee_code
-WHERE res_code = &res_code
-ORDER BY committee_code DESC;
+WHERE UPPER(r.res_descript) LIKE UPPER('&res_descript');
+/*ORDER BY committee_code DESC;*/
+
+SELECT r.res_descript, c.committee_description, s.total_num_students
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description');
 
 SELECT res_code, committee_code, total_num_students
 FROM STUDENT_FACT
