@@ -17,6 +17,8 @@ DROP SEQUENCE campus_campus_code_seq;
 DROP SEQUENCE event_type_event_type_code_seq;
 DROP SEQUENCE student_student_num_seq;
 drop view STUDENTS_VIEW ;
+drop view ATTENDANCE_VIEW ;
+drop view STUDENT_VIEW ;
 
 /* CREATE TABLES */
 /* DIM */
@@ -303,8 +305,7 @@ INTO STUDENT_FACT values(2018,c.committee,r.res_code, t.total_num_students)
 SELECT c.committee_code, r.res_code, t.total_num_students
 from committee_dim c
 join residance_dim r
-on 
-;
+on ;
 
 
 INSERT INTO STUDENT_FACT(year_year, committee_code, res_code, total_num_students)
@@ -1010,6 +1011,26 @@ on f.student_num = s.student_num;
 
 SELECT * FROM STUDENTS_VIEW;
 
+/*VIEW STATEMENTS*/
+CREATE VIEW ATTENDANCE_VIEW AS
+Select  a.sem_num, r.res_descript, e.event_description, a.committee_description, a.percentage_attendance
+FROM ATTENDANCE_FACT a
+JOIN EVENT_DIM e
+on a.event_type_code = e.event_type_code
+JOIN RESIDENCE_DIM r
+on a.res_code = r.res_code ;
+JOIN COMMITTEE_DIM c
+on a.committee_code = c.committee_code;
+
+SELECT * FROM ATTENDANCE_VIEW;
+
+CREATE VIEW STUDENT_VIEW AS
+Select  year_year, committee_code, res_code, total_num_students
+FROM STUDENT_FACT;
+
+SELECT * FROM STUDENT_VIEW;
+
+
 SELECT r.res_descript, c.committee_description, s.total_num_students
 FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
@@ -1019,15 +1040,17 @@ ON s.committee_code = c.committee_code;
 /*WHERE r.res_descript LIKE &res_descript;
 ORDER BY committee_code DESC;*/
 
+/*FILTER RES*/
 SELECT r.res_descript, c.committee_description, s.total_num_students
 FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
 on s.res_code = r.res_code
 JOIN COMMITTEE_DIM c
 ON s.committee_code = c.committee_code
-WHERE UPPER(r.res_descript) LIKE UPPER('&res_descript');
-/*ORDER BY committee_code DESC;*/
+WHERE UPPER(r.res_descript) LIKE UPPER('&res_descript')
+ORDER BY s.total_num_students DESC;
 
+/*FILTER COMITTEE*/
 SELECT r.res_descript, c.committee_description, s.total_num_students
 FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
@@ -1036,17 +1059,45 @@ JOIN COMMITTEE_DIM c
 ON s.committee_code = c.committee_code
 WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description');
 
-SELECT res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE committee_code = &committee_code
-ORDER BY committee_code DESC;
-
 
 /*SUM of STUDENTS IN RES*/
-SELECT  TO_CHAR(res_code) As " RES CODE", SUM(total_num_students) AS " SumOfStudents"
-From student_fact
-GROUP BY TO_CHAR(res_code)
-HAVING SUM(total_num_students) > 50;
+SELECT r.res_descript, c.committee_description, s.total_num_students
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description');
+
+/*Sum of aantal students in each res + having */      
+SELECT  r.res_descript AS "Residence", SUM(s.total_num_students) AS " Sum Of Students"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+GROUP BY r.res_descript
+HAVING SUM(s.total_num_students) > 20
+ORDER BY r.res_descript ASC;
+
+//*SUM of students in committees*/
+SELECT c.committee_description AS "Committee", SUM(s.total_num_students) AS "Sum of Students"
+FROM STUDENT_FACT s
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+GROUP BY c.committee_description
+HAVING SUM(s.total_num_students) > MAX(s.total_num_students);
+
+
+SELECT r.res_descript, c.committee_description, MAX(s.total_num_students)
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+
+
+WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description')
+GROUP BY c.committee_description
+HAVING SUM(s.total_num_students) > MAX(s.total_num_students);
 
 SELECT  res_code, committee_code, total_num_students
 FROM STUDENT_FACT
@@ -1264,25 +1315,6 @@ SELECT *
 FROM ATTENDANCE_FACT
 WHERE (Percentage_attendance = 1) AND (Committee_code= 1);
 
-/*VIEW STATEMENTS*/
-CREATE VIEW ATTENDANCE_VIEW AS
-Select  sem_num, res_code, event_type_code, committee_code, percentage_attendance
-FROM ATTENDANCE_FACT;
-
-SELECT * FROM ATTENDANCE_VIEW;
-
-CREATE VIEW STUDENT_VIEW AS
-Select  year_year, committee_code, res_code, total_num_students
-FROM STUDENT_FACT;
-
-SELECT * FROM STUDENT_VIEW;
-
-
-CREATE VIEW STUDENTS_VIEW AS
-Select year_year, month_month, res_code, event_type_code, student_num, total_students_in_res
-FROM STUDENTS_FACT;
-
-SELECT * FROM STUDENTS_VIEW;
 
 /*UPDATES*/
 UPDATE STUDENTS_FACT
