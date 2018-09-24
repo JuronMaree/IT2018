@@ -998,9 +998,9 @@ SELECT sem_num, EXTRACT (Month from end_date)
 FROM SEMESTER_DIM
 WHERE start_date BETWEEN TO_DATE('03/JUL/2018') AND TO_DATE('13/NOV/2018');
 
-/*FILTER Committees*/
+/*create views*/
 CREATE VIEW STUDENTS_VIEW AS
-Select f.year_year, f.month_month, r.res_descript, e.event_description, s.student_fname,s.student_lname, f.total_students_in_res
+Select f.year_year, f.month_month, r.res_descript, e.event_description, s.student_fname, s.student_lname, f.total_students_in_res
 FROM STUDENTS_FACT f
 JOIN EVENT_DIM e
 on f.event_type_code = e.event_type_code
@@ -1011,22 +1011,27 @@ on f.student_num = s.student_num;
 
 SELECT * FROM STUDENTS_VIEW;
 
+
 /*VIEW STATEMENTS*/
 CREATE VIEW ATTENDANCE_VIEW AS
-Select  a.sem_num, r.res_descript, e.event_description, a.committee_description, a.percentage_attendance
+Select  a.year_year, a.sem_num, r.res_descript, e.event_description, c.committee_description, a.percentage_attendance
 FROM ATTENDANCE_FACT a
 JOIN EVENT_DIM e
 on a.event_type_code = e.event_type_code
 JOIN RESIDENCE_DIM r
-on a.res_code = r.res_code ;
-JOIN COMMITTEE_DIM c
+on a.res_code = r.res_code 
+JOIN COMMITEE_DIM c
 on a.committee_code = c.committee_code;
 
 SELECT * FROM ATTENDANCE_VIEW;
 
 CREATE VIEW STUDENT_VIEW AS
-Select  year_year, committee_code, res_code, total_num_students
-FROM STUDENT_FACT;
+Select  s.year_year, c.committee_description, r.res_descript, s.total_num_students
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on a.res_code = r.res_code 
+JOIN COMMITEE_DIM c
+on a.committee_code = c.committee_code;
 
 SELECT * FROM STUDENT_VIEW;
 
@@ -1060,14 +1065,14 @@ ON s.committee_code = c.committee_code
 WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description');
 
 
-/*SUM of STUDENTS IN RES*/
+/*NUMBER STUDENTS ATTENDED FOR A SERTAIN RES AND COMMITTEE*/
 SELECT r.res_descript, c.committee_description, s.total_num_students
 FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
 on s.res_code = r.res_code
 JOIN COMMITTEE_DIM c
 ON s.committee_code = c.committee_code
-WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description');
+WHERE  UPPER(r.res_descript) LIKE UPPER('&res_descript') AND UPPER(c.committee_description) LIKE UPPER('&committee_description');
 
 /*Sum of aantal students in each res + having */      
 SELECT  r.res_descript AS "Residence", SUM(s.total_num_students) AS " Sum Of Students"
@@ -1075,7 +1080,7 @@ FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
 on s.res_code = r.res_code
 GROUP BY r.res_descript
-HAVING SUM(s.total_num_students) > 20
+HAVING SUM(s.total_num_students) >MAX(s.total_num_students) 
 ORDER BY r.res_descript ASC;
 
 //*SUM of students in committees*/
@@ -1086,116 +1091,152 @@ ON s.committee_code = c.committee_code
 GROUP BY c.committee_description
 HAVING SUM(s.total_num_students) > MAX(s.total_num_students);
 
-
-SELECT r.res_descript, c.committee_description, MAX(s.total_num_students)
+/*MAX committee lede van die residence*/
+SELECT r.res_descript As "Residence", c.committee_description AS "Committee", MAX(s.total_num_students) AS "MAX of Students"
 FROM STUDENT_FACT s
 JOIN RESIDENCE_DIM r
 on s.res_code = r.res_code
 JOIN COMMITTEE_DIM c
 ON s.committee_code = c.committee_code
+GROUP BY c.committee_description, r.res_descript
+HAVING MAX(s.total_num_students) > (Select MAX(s.total_num_students) -1 
+                                    FROM STUDENT_FACT s);
+                                    
+/*Minste Kommittee lede*/
+SELECT r.res_descript As "Residence",c.committee_description AS "Committee", MIN(s.total_num_students) AS "MIN of Students"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+GROUP BY c.committee_description, r.res_descript
+HAVING MIN(s.total_num_students) <(Select MIN(s.total_num_students) +1 
+                                    FROM STUDENT_FACT s);
 
 
-WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description')
+
+
+
+
+/*Average students attended all committees in the res + next one committes*/
+SELECT r.res_descript AS "Residence", ROUND(AVG(s.total_num_students)) AS "AVERAGE Students in res"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+GROUP BY r.res_descript
+ORDER BY ROUND(AVG(s.total_num_students));
+
+SELECT c.committee_description AS "Committee", ROUND(AVG(s.total_num_students)) AS "AVERAGE Students in res"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
 GROUP BY c.committee_description
-HAVING SUM(s.total_num_students) > MAX(s.total_num_students);
+ORDER BY ROUND(AVG(s.total_num_students));
 
-SELECT  res_code, committee_code, total_num_students
-FROM STUDENT_FACT
-WHERE total_num_students > 10
-ORDER BY  committee_code DESC;
+/*filtered to a average of the res you want and committee*/
+SELECT r.res_descript AS "Residence", ROUND(AVG(s.total_num_students)) AS "AVERAGE Students in res"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+WHERE  UPPER(r.res_descript) LIKE UPPER('&res_descript')
+GROUP BY r.res_descript;
 
-
-
-/*SUM of STUDENTS IN RES*/
-/*GROUP BY AND TO_CHAR*/
-SELECT SUM(total_num_students) AS totalStudents
-FROM student_fact 
-Where res_code BETWEEN 1 AND 2 
-GROUP By TO_CHAR(committee_code)
-Order by totalStudents DESC;
-
-SELECT SUM(total_num_students)
-FROM student_fact Where res_code = 1;
-SELECT SUM(total_num_students)
-FROM student_fact Where res_code = 2 ;
-SELECT SUM(total_num_students)
-FROM student_fact Where res_code = 3 ;
-SELECT SUM(total_num_students)
-FROM student_fact Where res_code = 4 ;
-
-/*Average Students <50*/
-SELECT Avg(total_num_students) AS "Average studente"
-From student_fact 
-WHERE total_num_students > 50;
-
-/* Studente Grooter as Average in die residence*/
-SELECT  *
-FROM STUDENT_FACT
-WHERE total_num_students > (SELECT Avg(total_num_students) 
-                         From student_fact 
-                            WHERE res_code Between 1 AND 4) 
-ORDER BY res_code;
-
-/*Average of STUDENTS IN RES*/
-SELECT  *
-FROM STUDENT_FACT
-WHERE total_num_students < (SELECT Avg(total_num_students) AS "AVERAGE STUDENTS" 
-                         From student_fact 
-                            WHERE res_code BETWEEN 1 AND 4 ) 
-ORDER BY res_code DESC, total_num_students;
-
-/*AVERAGE*/
-SELECT  *
-FROM STUDENT_FACT
-WHERE res_code =1 AND total_num_students < (SELECT Avg(total_num_students) AS "AVERAGE STUDENTS" 
-                         From student_fact 
-                            WHERE total_num_students < 30 ) 
-ORDER BY res_code DESC, total_num_students;
-
-/*ROUND FUNCTION*/
-SELECT ROUND(AVG(total_num_students)) FROM student_fact WHERE committee_code = 1;
-
-/*COMBINATION*/
-SELECT  committee_code, res_code, total_num_students 
-FROM STUDENT_FACT
-WHERE Committee_code =1 AND  ((SELECT sum(total_num_students) AS "Sum_committee_1"
-                            FROM student_fact
-                            Where committee_code =1) < (SELECT sum(total_num_students) AS "Sum_committee_2"
-                                                    FROM student_fact
-                                                    Where committee_code =2))
-ORDER BY committee_code DESC, total_num_students;
+SELECT c.committee_description AS "Committee", ROUND(AVG(s.total_num_students)) AS "AVERAGE Students in Committee"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+WHERE UPPER(c.committee_description) LIKE UPPER('&committee_description')
+GROUP BY c.committee_description;
 
 
-/*MAX student*/
-SELECT MAX(total_num_students) AS "Most students"
-FROM STUDENT_FACT;
 
 
-/*COUNT AND SUM*/
-SELECT COUNT(total_students_in_res) As "Amount of Residances", SUM(total_students_in_res) As "Amount of STUDENTS"
-FROM students_fact;
+/*Aantal committees en som van students per res*/
+SELECT r.res_descript AS "Residence", COUNT(s.total_num_students) As "Amount of Residances", SUM(s.total_num_students) As "Amount of STUDENTS"
+FROM STUDENT_FACT s
+JOIN RESIDENCE_DIM r
+on s.res_code = r.res_code
+JOIN COMMITTEE_DIM c
+ON s.committee_code = c.committee_code
+WHERE  UPPER(r.res_descript) LIKE UPPER('&res_descript')
+GROUP BY r.res_descript;
 
 
-/*FILTER Res*/
-SELECT year_year, month_month, res_code, event_type_code, student_num, total_students_in_res
-FROM STUDENTS_FACT 
-WHERE res_code In('3','1')
-ORDER BY event_type_code ;
+/*STUDENTS FACT*/
 
-/*FILTER VIA MOTHS*/
-SELECT  res_code, event_type_code, student_num, total_students_in_res
-FROM STUDENTS_FACT 
-WHERE month_month < (SELECT AVG(month_month)
-                    FROM STUDENTS_FACT)
-ORDER BY event_type_code ;
+SELECT f.year_year, f.month_month, r.res_descript, e.event_description, s.student_num, s.student_fname, s.student_lname ,f.total_students_in_res
+FROM STUDENTS_FACT f
+JOIN STUDENT_DIM s
+on f.student_num = s.student_num
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code;
+
+SELECT f.year_year, f.month_month, r.res_descript, e.event_description, s.student_num, s.student_fname, s.student_lname ,f.total_students_in_res
+FROM STUDENTS_FACT f
+JOIN STUDENT_DIM s
+on f.student_num = s.student_num
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code
+WHERE f.month_month Like ('&month_month');
+
+/* Al die events van die koshuis*/
+SELECT r.res_descript, e.event_description, s.student_num, s.student_fname, s.student_lname ,f.total_students_in_res
+FROM STUDENTS_FACT f
+JOIN STUDENT_DIM s
+on f.student_num = s.student_num
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code
+WHERE UPPER(e.event_description) Like UPPER('&event_description');
+
+
+/*Sporte van 1 persoon*/
+SELECT  r.res_descript As "Residence", e.event_description AS "EVENT", s.student_fname AS "Name", s.student_lname AS "Surname"
+FROM STUDENTS_FACT f
+JOIN STUDENT_DIM s
+on f.student_num = s.student_num
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code
+WHERE UPPER(s.student_fname) LIKE UPPER('&student_fname');
+
+/*Count aantal sporte wat 1 mens doen*/
+SELECT  Count(s.student_num) AS "Aantal kere", s.student_fname AS "Naam", s.student_lname AS "surname"
+FROM STUDENTS_FACT f
+JOIN STUDENT_DIM s
+on f.student_num = s.student_num
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code
+WHERE UPPER(s.student_fname) LIKE UPPER('&student_fname')
+GROUP BY s.student_fname,s.student_lname;
+
+
 
 /*MAX Students ATTENDED EVENT between the recidence)*/
-SELECT  event_type_code, res_code, tot_stu_attend_event
-FROM EVENT_FACT
-WHERE tot_stu_attend_event = (SELECT MAX(tot_stu_attend_event)
-                            FROM EVENT_FACT
-                            WHERE event_type_code In('1','2','3','4','5','6'))
-ORDER BY event_type_code;
+SELECT MAX(f.tot_stu_attend_event) AS "students attended this sport", r.res_descript, e.event_description 
+FROM EVENT_FACT f
+JOIN RESIDENCE_DIM r
+on f.res_code = r.res_code
+JOIN EVENT_DIM e
+on f.event_type_code = e.event_type_code
+GROUP BY r.res_descrip, e.event_description
+ORDER BY e.event_type_code;
 
 SELECT  event_type_code, res_code, tot_stu_attend_event
 FROM EVENT_FACT
@@ -1252,26 +1293,6 @@ FROM STUDENT_FACT
 WHERE res_CODE = 1
 ORDER BY Committee_Code DESC;
 
-
-/*ATTENDANCE_FACT(year_year, sem_num, res_code, event_type_code, committee_code, percentage_attendance)*/
-/*fILTERING Committees form sport INNER JOIN*/
-SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
-FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 1;
-
-
-SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
-FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 2;
-
-SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
-FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 3;
-
-
-SELECT ATTENDANCE_FACT.res_code, ATTENDANCE_FACT.event_type_code, ATTENDANCE_FACT.sem_num
-FROM ATTENDANCE_FACT INNER JOIN STUDENT_FACT ON ATTENDANCE_FACT.res_code = STUDENT_FACT.res_code
-WHERE STUDENT_FACT.committee_code = 4;
 
 
 /*fILTERING Committees form sport*/
