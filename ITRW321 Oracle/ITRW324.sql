@@ -16,6 +16,14 @@
                 DROP SEQUENCE campus_campus_code_seq;
                 DROP SEQUENCE event_type_event_type_code_seq;
                 DROP SEQUENCE student_student_num_seq;
+                drop view STUDENTS_VIEW ;
+                drop view ATTENDANCE_VIEW ;
+                drop view STUDENT_VIEW ;
+                DROP INDEX stu_unique_index;
+                DROP INDEX name_unique_index;
+                DROP INDEX res_index;
+                DROP INDEX event_index;
+                DROP INDEX commit_index;
                 drop view STUDENTS_VIEW;
                 drop view ATTENDANCE_VIEW;
                 drop view STUDENT_VIEW;
@@ -1280,3 +1288,20 @@
                 UPDATE ATTENDANCE_FACT
                 SET sem_num= &sem_num, res_code= &res_code, event_type_code=&event_type_code, committee_code=&committee_code, percentage_attendance=&percentage_attendance
                 where event_type_code = 3;
+                
+                
+                /*INDEX*/
+                CREATE UNIQUE INDEX stu_unique_index
+                ON STUDENT_DIM(student_fname);
+               
+                CREATE UNIQUE INDEX name_unique_index
+                ON STUDENT_DIM(student_lname);
+                
+                CREATE INDEX res_index 
+                ON RESIDENCE_DIM(res_descript);
+                
+                CREATE INDEX event_index
+                ON EVENT_DIM(event_description);
+                
+                CREATE INDEX commit_index
+                ON COMMITTEE_DIM(committee_description);
