@@ -16,9 +16,9 @@
                 DROP SEQUENCE campus_campus_code_seq;
                 DROP SEQUENCE event_type_event_type_code_seq;
                 DROP SEQUENCE student_student_num_seq;
-                drop view STUDENTS_VIEW ;
-                drop view ATTENDANCE_VIEW ;
-                drop view STUDENT_VIEW ;
+                drop view STUDENTS_VIEW;
+                drop view ATTENDANCE_VIEW;
+                drop view STUDENT_VIEW;
 
 /* CREATE TABLES */
                 /* DIM */
@@ -1175,7 +1175,8 @@
                 on f.res_code = r.res_code
                 JOIN EVENT_DIM e
                 on f.event_type_code = e.event_type_code;
-                
+
+/*maand 3 se aktiwiteite       */         
                 SELECT f.year_year, f.month_month, r.res_descript, e.event_description, s.student_num, s.student_fname, s.student_lname ,f.total_students_in_res
                 FROM STUDENTS_FACT f
                 JOIN STUDENT_DIM s
@@ -1186,7 +1187,7 @@
                 on f.event_type_code = e.event_type_code
                 WHERE f.month_month Like ('&Maand');
                 
-                /* Al die events van die koshuis*/
+            /* Al die events van die koshuis*/
                 SELECT r.res_descript, e.event_description, s.student_num, s.student_fname, s.student_lname ,f.total_students_in_res
                 FROM STUDENTS_FACT f
                 JOIN STUDENT_DIM s
@@ -1210,12 +1211,10 @@
                 WHERE UPPER(s.student_fname) LIKE UPPER('&Student First Name');
                 
 /*!!!!!!!!!!!!!!!!!!Count aantal sporte wat 1 mens doen*/
-                SELECT  Count(s.student_num) AS "Aantal kere", s.student_fname AS "Naam", s.student_lname AS "surname"
+                SELECT s.student_fname AS "Naam", s.student_lname AS "surname" ,Count(s.student_num) AS "Aantal kere"
                 FROM STUDENTS_FACT f
                 JOIN STUDENT_DIM s
                 on f.student_num = s.student_num
-                JOIN RESIDENCE_DIM r
-                on f.res_code = r.res_code
                 JOIN EVENT_DIM e
                 on f.event_type_code = e.event_type_code
                 WHERE UPPER(s.student_fname) LIKE UPPER('&Student First Name')
@@ -1223,121 +1222,55 @@
                 
                 
                 
-/*!!!!!!!!!!!!!!!!!MAX Students ATTENDED EVENT between the recidences)*/
-                SELECT MAX(f.tot_stu_attend_event) AS "students attended this sport", r.res_descript, e.event_description 
+/*MAX Students ATTENDED EVENT between the recidences)*/
+                SELECT  r.res_descript AS "Residence", e.event_description AS "Event", MAX(f.tot_stu_attend_event) AS "students attended this sport"
                 FROM EVENT_FACT f
                 JOIN RESIDENCE_DIM r
                 on f.res_code = r.res_code
                 JOIN EVENT_DIM e
                 on f.event_type_code = e.event_type_code
                 GROUP BY r.res_descript, e.event_description
-                ORDER BY e.event_type_code;
+                ORDER BY MAX(f.tot_stu_attend_event);
                 
+/*Semester 1*/
+                SELECT s.sem_num, r.res_descript, e.event_description, c.committee_description, a.percentage_attendance
+                FROM ATTENDANCE_FACT a
+                JOIN RESIDENCE_DIM r
+                on a.res_code = r.res_code
+                JOIN COMMITTEE_DIM c
+                ON a.committee_code = c.committee_code
+                JOIN EVENT_DIM e
+                on a.event_type_code = e.event_type_code
+                JOIN SEMESTER_DIM s
+                ON a.sem_num = s.sem_num
+                WHERE UPPER(s.sem_num) Like UPPER('&Semester');/* bv 1 of 2*/               
+/* persentage attendance of a res*/                
+              SELECT s.sem_num, r.res_descript, e.event_description, c.committee_description, a.percentage_attendance
+                FROM ATTENDANCE_FACT a
+                JOIN RESIDENCE_DIM r
+                on a.res_code = r.res_code
+                JOIN COMMITTEE_DIM c
+                ON a.committee_code = c.committee_code
+                JOIN EVENT_DIM e
+                on a.event_type_code = e.event_type_code
+                JOIN SEMESTER_DIM s
+                ON a.sem_num = s.sem_num
+                WHERE UPPER( a.percentage_attendance) = 1;
+                  
+
+            SELECT  r.res_descript As "Residence", c.committee_description AS "Committee", Count(a.percentage_attendance) AS "Amount percentage attendance"
+                FROM ATTENDANCE_FACT a
+                JOIN RESIDENCE_DIM r
+                on a.res_code = r.res_code
+                JOIN COMMITTEE_DIM c
+                ON a.committee_code = c.committee_code
+                JOIN EVENT_DIM e
+                on a.event_type_code = e.event_type_code
+                JOIN SEMESTER_DIM s
+                ON a.sem_num = s.sem_num
+                WHERE UPPER( a.percentage_attendance) = 1 AND  UPPER(r.res_descript) Like UPPER('&Residence') 
+                group by  r.res_descript , c.committee_description ;
                 
-                SELECT  event_type_code, res_code, tot_stu_attend_event
-                FROM EVENT_FACT
-                WHERE tot_stu_attend_event = (SELECT MIN(tot_stu_attend_event)
-                                            FROM EVENT_FACT
-                                            WHERE event_type_code In('1','2','3','4','5','6'))
-                ORDER BY event_type_code;
-                
-                
-                SELECT COUNT(event_type_code) AS "Amount of EVENTS"
-                FROM EVENT_FACT
-                WHERE res_code in('1', '2' , '3') ;
-                
-                SELECT COUNT(event_type_code) AS "Amount of EVENTS"
-                FROM EVENT_FACT
-                WHERE res_code BETWEEN 1 AND 2 ;
-                
-                SELECT event_type_code, res_code, tot_stu_attend_event
-                FROM EVENT_FACT
-                WHERE tot_stu_attend_event = (SELECT COUNT(event_type_code) AS "Amount of EVENTS"
-                                            FROM EVENT_FACT
-                                            WHERE res_code =1 );
-                
-                
-                
-                
-                /*MAX EVENTS ATTENDED EVENT between the recidence)*/
-                SELECT  event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend
-                FROM EVENT_FACT
-                WHERE tot_events_stu_attend = (SELECT MAX(tot_events_stu_attend)
-                                            FROM EVENT_FACT
-                                            WHERE event_type_code BETWEEN 1 AND 6)
-                ORDER BY event_type_code;
-                
-                
-                
-                /*COUNT Committees STATEMENT*/
-                SELECT TO_CHAR(tot_stu_attend_event), COUNT(month_month) AS "Amount of Months"
-                FROM EVENT_FACT
-                WHERE tot_stu_attend_event = 22
-                GROUP BY TO_CHAR(tot_stu_attend_event)
-                HAVING COUNT(month_month) > 2;
-                
-                /*COUNT events STATEMENT*/
-                SELECT COUNT(event_type_code) As amountofevents
-                FROM ATTENDANCE_FACT
-                GROUP BY res_code
-                HAVING COUNT(event_type_code) > 4;
-                
-                
-                /*All year 2018*/
-                
-                SELECT *
-                FROM STUDENT_FACT
-                WHERE res_CODE = 1
-                ORDER BY Committee_Code DESC;
-                
-                
-                
-                /*fILTERING Committees form sport*/
-                SELECT res_code,event_type_code, sem_num, committee_code, percentage_attendance
-                FROM ATTENDANCE_FACT 
-                WHERE committee_code = 1
-                ORDER BY committee_code;
-                
-                SELECT res_code,event_type_code, sem_num, committee_code, percentage_attendance
-                FROM ATTENDANCE_FACT 
-                WHERE percentage_attendance > (SELECT AVG(percentage_attendance)
-                                                FROM ATTENDANCE_FACT)
-                ORDER BY committee_code;
-                
-                
-                
-                SELECT res_code,event_type_code, sem_num 
-                FROM ATTENDANCE_FACT 
-                WHERE committee_code = 3 
-                ORDER BY committee_code;
-                
-                
-                SELECT res_code,event_type_code, sem_num, committee_code
-                FROM ATTENDANCE_FACT 
-                WHERE committee_code IN ('4','5','6')
-                ORDER BY committee_code;
-                
-                
-                /*MAX Percentages*/
-                SELECT MAX(percentage_attendance) AS "Highest Attendance"
-                FROM ATTENDANCE_FACT
-                WHERE sem_num = 1
-                ORDER BY percentage_attendance ASC;
-                
-                SELECT SUM(percentage_attendance) AS "SUM of all Attendance"
-                FROM ATTENDANCE_FACT
-                WHERE sem_num IN ('1','2')
-                ORDER BY percentage_attendance ASC;
-                
-                SELECT *
-                FROM ATTENDANCE_FACT
-                WHERE (Percentage_attendance = 1) AND (Committee_code= 1);
-                
-                
-                /*UPDATES*/
-                UPDATE STUDENTS_FACT
-                SET year_year= &year_year , month_month= &month_month , res_code = &res_code, event_type_code = &event_type_code, student_num =&student_num, total_students_in_res=&total_students_in_res
-                where month_month = &month_month;
                 
 --!!!!!!                
                 UPDATE STUDENT_FACT
