@@ -21,6 +21,15 @@
             event
             student
             atendance*/
+            CREATE TABLE CAMPUS(
+                campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
+                campus_description VARCHAR(20));
+                
+                CREATE TABLE RESIDENCE(
+                res_code NUMBER(6) CONSTRAINT res_res_code PRIMARY KEY,
+                campus_code NUMBER(6) CONSTRAINT camp_cd REFERENCES CAMPUS(campus_code),
+                res_descript VARCHAR(20));
+                
                 CREATE TABLE COMMITTEE(
                 committee_code NUMBER(6) CONSTRAINT committee_committee_code71 PRIMARY KEY,
                 res_code NUMBER(6) CONSTRAINT res_cod1 REFERENCES RESIDENCE(res_code),
@@ -31,25 +40,23 @@
                 start_date DATE,
                 end_date DATE);
                 
-                CREATE TABLE RESIDENCE(
-                res_code NUMBER(6) CONSTRAINT res_res_code PRIMARY KEY,
-                campus_code NUMBER(6) CONSTRAINT camp_cd REFERENCES CAMPUS(campus_code),
-                res_descript VARCHAR(20));
                 
-                CREATE TABLE CAMPUS(
-                campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
-                campus_description VARCHAR(20));
+                
                 
                 CREATE TABLE EVENT(
                 event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code PRIMARY KEY,
                 sem_num NUMBER(6) CONSTRAINT sem_numb REFERENCES SEMESTER_DATE(sem_num),
-                committee_code NUMBER(6) CONSTRAINT com_cd REFERENCES COMMITTEE(committee_code),
-                campus_code NUMBER(6) CONSTRAINT cam_cd REFERENCES CAMPUS(campus_code),
-                res_code NUMBER(6) CONSTRAINT re_cde REFERENCES RESIDENCE(res_code),
+                committee_code NUMBER(6) CONSTRAINT com_cd REFERENCES COMMITTEE(committee_code),                
                 event_date DATE DEFAULT(SYSDATE),
                 tot_stu_attend NUMBER(7),
-                tot_events_stu NUMBER(7),
                 event_description VARCHAR(20));
+                
+                /*Pappa
+                
+                Pappa*/
+                
+                
+                
                 
                 CREATE TABLE STUDENT(
                 student_num NUMBER(6) CONSTRAINT stud_student_num PRIMARY KEY,
@@ -112,8 +119,8 @@
                 /*INSERT*/
                 
                 /*Different Committee*/
-                INSERT INTO COMMITTEE(committee_code, committee_description)
-                VALUES(committee_committee_code_seq.NEXTVAL, 'Sport');
+                INSERT INTO COMMITTEE(committee_code,res_code, committee_description)
+                VALUES(committee_committee_code_seq.NEXTVAL,17, 'Sport');
                 
                 INSERT INTO COMMITTEE(committee_code, committee_description)
                 VALUES(committee_committee_code_seq.NEXTVAL, 'Werwing');
@@ -136,17 +143,17 @@
                 
                 
                 /*Different Residences*/
-                INSERT INTO RESIDENCE(res_code, res_descript)
-                VALUES(res_res_code_seq.NEXTVAL, 'Caput');
+                INSERT INTO RESIDENCE(res_code, campus_code,res_descript)
+                VALUES(res_res_code_seq.NEXTVAL,7, 'Caput');
                 
-                INSERT INTO RESIDENCE(res_code, res_descript)
-                VALUES(res_res_code_seq.NEXTVAL, 'Hombre');
+                INSERT INTO RESIDENCE(res_code,campus_code, res_descript)
+                VALUES(res_res_code_seq.NEXTVAL, 8,'Hombre');
                 
-                INSERT INTO RESIDENCE(res_code, res_descript)
-                VALUES(res_res_code_seq.NEXTVAL, 'Veritas');
+                INSERT INTO RESIDENCE(res_code,campus_code, res_descript)
+                VALUES(res_res_code_seq.NEXTVAL,9, 'Veritas');
                 
-                INSERT INTO RESIDENCE(res_code, res_descript)
-                VALUES(res_res_code_seq.NEXTVAL, 'Excelsior');
+                INSERT INTO RESIDENCE(res_code,campus_code, res_descript)
+                VALUES(res_res_code_seq.NEXTVAL, 9,'Excelsior');
                 
                 
                 /*Different Campus*/
