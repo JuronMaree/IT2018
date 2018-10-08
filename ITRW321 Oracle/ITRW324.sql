@@ -44,6 +44,11 @@
                 event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code PRIMARY KEY,
                 sem_num NUMBER(6) CONSTRAINT sem_numb REFERENCES SEMESTER_DATE(sem_num),
                 committee_code NUMBER(6) CONSTRAINT com_cd REFERENCES COMMITTEE(committee_code),
+                campus_code NUMBER(6) CONSTRAINT cam_cd REFERENCES CAMPUS(campus_code),
+                res_code NUMBER(6) CONSTRAINT re_cde REFERENCES RESIDENCE(res_code),
+                event_date DATE DEFAULT(SYSDATE),
+                tot_stu_attend NUMBER(7),
+                tot_events_stu NUMBER(7),
                 event_description VARCHAR(20));
                 
                 CREATE TABLE STUDENT(
@@ -374,20 +379,20 @@
                /* INSERT INTO ATTENDANCE_FACT(
                 year_year, sem_num, res_code, event_type_code, commitee_code, PERCENTANCE_ATTENDANCE*/
                 
-               INSERT INTO EVENT_TYPE_FACT(
+              /* INSERT INTO EVENT_TYPE_FACT(
                f.year_year, s.sem_num, c.campus_code, f.event_type_code, f.TOTAL_EVENTS)
                SELECT s.sem_num, EXTRACT(YEAR FROM s.start_date)
                FROM EVENT f 
                JOIN SEMESTER_DATE s 
                on f.sem_num = s.sem_num
                JOIN CAMPUS c
-               on f.campus_code = c.campus_code;
+               on f.campus_code = c.campus_code;*/
                
                
                INSERT INTO EVENT_TYPE_FACT(
-               year_year, 
-               sem_num, campus_code,
-               event_type_code, TOTAL_EVENTS)
+               e.year_year, 
+               s.sem_num, c.campus,
+               e.event_type_code, e.TOTAL_EVENTS)
                select 
                 extract(year from s.start_date),
                 s.sem_num,c.campus_code,e.event_type_code,
@@ -395,10 +400,42 @@
                FROM EVENT e 
                JOIN SEMESTER_DATE s
                on e.sem_num = s.sem_num
-               JOIN committee c
-               on c.committee_code = e.committee_code
+               JOIN CAMPUS c
+               on c.campus_code = e.campus_code;
                
                group by extract(year from s.start_date), s.start_date, s.sem_num, c.campus_code, e.event_type_code;
                
                
-                
+                INSERT INTO Quotes_Fact
+        (ShaftNumber, TheYear, TheMonth, 
+            TOTAL_NUMBER_QUOTES)
+        SELECT
+            Quotes.SHAFTNUMBER,
+            EXTRACT(YEAR FROM Quotes.QUOTEDATE),
+            EXTRACT(MONTH FROM Quotes.QUOTEDATE),
+
+            INSERT INTO EVENT_FACT
+                    (year_year, month_month, event_type_code, res_code, tot_stu_attend_event, tot_events_stu_attend)
+                SELECT 
+                    EXTRACT(year from EVENT.event_date),
+                    EXTRACT(month from EVENT.event_date),
+                    EVENT.event_type_code,
+                    EVENT.res_code,
+                    SUM(EVENT.tot_stu_attend),
+                    SUM(EVENT.tot_events_stu)
+            FROM EVENT
+            WHERE EVENT.event_date > SYSDATE-1
+                GROUP BY EVENT.event_type_code, EVENT.res_code,
+                EXTRACT(year from EVENT.event_date),
+                EXTRACT(month from EVENT.event_date);
+            
+            where event.event_description like '%S%';
+            
+            SELECT * from EVENT
+                where event.event_description like '%S%';
+               
+            SELECT * from COMMITTEE
+            select * from RESIDENCE
+                where campus_code IS NOT NULL
+            select * from campus    
+            select * from event_fact
