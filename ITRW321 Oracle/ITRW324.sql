@@ -30,6 +30,15 @@
                 campus_code NUMBER(6) CONSTRAINT camp_cd REFERENCES CAMPUS(campus_code),
                 res_descript VARCHAR(20));
                 
+               CREATE TABLE CAMPUS(
+                campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
+                campus_description VARCHAR(20));
+                
+                CREATE TABLE RESIDENCE(
+                res_code NUMBER(6) CONSTRAINT res_res_code PRIMARY KEY,
+                campus_code NUMBER(6) CONSTRAINT camp_cd REFERENCES CAMPUS(campus_code),
+                res_descript VARCHAR(20));
+                
                 CREATE TABLE COMMITTEE(
                 committee_code NUMBER(6) CONSTRAINT committee_committee_code71 PRIMARY KEY,
                 res_code NUMBER(6) CONSTRAINT res_cod1 REFERENCES RESIDENCE(res_code),
@@ -384,14 +393,43 @@
                /* INSERT INTO ATTENDANCE_FACT(
                 year_year, sem_num, res_code, event_type_code, commitee_code, PERCENTANCE_ATTENDANCE*/
                 
-              /* INSERT INTO EVENT_TYPE_FACT(
-               f.year_year, s.sem_num, c.campus_code, f.event_type_code, f.TOTAL_EVENTS)
-               SELECT s.sem_num, EXTRACT(YEAR FROM s.start_date)
-               FROM EVENT f 
+           /*    INSERT INTO EVENT_TYPE_FACT(
+               year_year, sem_num, campus_code, event_type_code ,total_events)
+               SELECT EXTRACT(YEAR FROM s.start_date) AS "Year" ,s.sem_num "Semester", c.campus_description AS "Campus", e.event_description AS "Event",Count(e.event_type_code) AS "Total events"
+               FROM EVENT e
                JOIN SEMESTER_DATE s 
-               on f.sem_num = s.sem_num
+               on e.sem_num = s.sem_num
                JOIN CAMPUS c
-               on f.campus_code = c.campus_code;*/
+               on e.campus_code = c.campus_code
+               Group by s.sem_num, c.campus_description, e.event_description ;*/
+               
+               INSERT INTO STUDENT_FACT( year_year, committee_code, res_code , total_num_students)
+               SELECT extract(year from s.event_date), c.committee_description, r.res_descript, null
+               FROM EVENT s
+               JOIN COMMITTEE c
+               on s.committee_code = c.committee_code
+               JOIN RESIDENCE r
+               on s.res_code = r.res_code;
+               
+               
+               WHERE UPPER(s.committee_code) Like UPPER('&Committee');
+               GROUP BY c.committee_description;
+               
+                INSERT INTO STUDENT_FACT( year_year, committee_code, res_code)
+               SELECT extract(year from s.start_date) AS "Year", c.committee_description AS "Committee", r.res_descript AS "Residence" 
+               FROM SEMESTER_DATE s
+               NATURAL JOIN COMMITTEE c
+               NATURAL JOIN RESIDENCE r;
+               
+               INSERT INTO ATTENDANCE_FACT (year_year, sem_num, res_code, committee_code, percentage_attended)
+               SELECT year_year, sem_num, res_descript, committee_description , percentage_attended
+               FROM
+               
+               JOIN COMMITTEE c
+               on s.committee_code = c.committee_code
+               JOIN RESIDENCE r
+               on s.res_code = r.res_code
+               
                
                
                INSERT INTO EVENT_TYPE_FACT(
