@@ -137,10 +137,10 @@
                 
                 
                 /*Different Semesters*/
-                INSERT INTO SEMESTER(sem_num, start_date, end_date)
+                INSERT INTO SEMESTER_DATE(sem_num, start_date, end_date)
                 VALUES(sem_sem_num_seq.NEXTVAL, TO_DATE('02/Feb/2018'), TO_DATE('02/JUL/2018'));
                 
-                INSERT INTO SEMESTER(sem_num, start_date, end_date)
+                INSERT INTO SEMESTER_DATE(sem_num, start_date, end_date)
                 VALUES(sem_sem_num_seq.NEXTVAL, TO_DATE('03/JUL/2018'), TO_DATE('13/NOV/2018'));
                 
                 
@@ -327,4 +327,29 @@
                 student_num NUMBER(6) CONSTRAINT stnt_student_num55 REFERENCES STUDENT_DIM(student_num),
                 total_students_in_res NUMBER(3),PRIMARY KEY(year_year, month_month, res_code, event_type_code, student_num));
                 
+            Insert into COMMITTEE_DIM
+                SELECT committee_code,committee_description
+                FROM COMMITTEE ;
+              
+            Insert into residence_dim
+                SELECT res_code,res_descript
+                FROM residence ;
+                
+            Insert into campus_dim
+                SELECT campus.campus_code,campus.campus_description
+                FROM campus ;
+                
+            Insert into student_dim
+                SELECT student.student_num,student.student_fname,student.student_lname
+                FROM student ;
+                
+            Insert into semester_dim
+                SELECT semester_date.sem_num,semester_date.start_date,semester_date.end_date
+                FROM SEMESTER_DATE ;
+                
+            Insert into event_dim
+                SELECT event.event_type_code,event.event_description
+                FROM event ;
+                
+               
                 
