@@ -51,9 +51,7 @@
                 tot_stu_attend NUMBER(7),
                 event_description VARCHAR(20));
                 
-                /*Pappa
-                
-                Pappa*/
+            
                 
                 
                 
