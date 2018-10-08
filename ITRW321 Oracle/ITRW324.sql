@@ -4,17 +4,26 @@
                 DROP TABLE CAMPUS;
                 DROP TABLE EVENT;
                 DROP TABLE STUDENT;
+                Drop Table Attendance;
+         
                 
-                 DROP SEQUENCE committee_committee_code_seq;
+                DROP SEQUENCE committee_committee_code_seq;
                 DROP SEQUENCE sem_sem_num_seq;
                 DROP SEQUENCE res_res_code_seq;
                 DROP SEQUENCE campus_campus_code_seq;
                 DROP SEQUENCE event_type_event_type_code_seq;
                 DROP SEQUENCE student_student_num_seq;
                 
-                
-        CREATE TABLE COMMITTEE(
-                committee_code NUMBER(6) CONSTRAINT committee_committee_code1 PRIMARY KEY,
+               /* campus
+                residendce
+                coommitee
+            semester date
+            event
+            student
+            atendance*/
+                CREATE TABLE COMMITTEE(
+                committee_code NUMBER(6) CONSTRAINT committee_committee_code71 PRIMARY KEY,
+                res_code NUMBER(6) CONSTRAINT res_cod1 REFERENCES RESIDENCE(res_code),
                 committee_description VARCHAR(20));
                 
                 CREATE TABLE SEMESTER_DATE(
@@ -24,6 +33,7 @@
                 
                 CREATE TABLE RESIDENCE(
                 res_code NUMBER(6) CONSTRAINT res_res_code PRIMARY KEY,
+                campus_code NUMBER(6) CONSTRAINT camp_cd REFERENCES CAMPUS(campus_code),
                 res_descript VARCHAR(20));
                 
                 CREATE TABLE CAMPUS(
@@ -32,12 +42,21 @@
                 
                 CREATE TABLE EVENT(
                 event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code PRIMARY KEY,
+                sem_num NUMBER(6) CONSTRAINT sem_numb REFERENCES SEMESTER_DATE(sem_num),
+                committee_code NUMBER(6) CONSTRAINT com_cd REFERENCES COMMITTEE(committee_code),
                 event_description VARCHAR(20));
                 
                 CREATE TABLE STUDENT(
                 student_num NUMBER(6) CONSTRAINT stud_student_num PRIMARY KEY,
+                res_code NUMBER(6) CONSTRAINT res_cd REFERENCES RESIDENCE(res_code),
                 student_fname VARCHAR(25),
                 student_lname VARCHAR(25));
+                
+                CREATE TABLE ATTENDANCE(
+                student_num NUMBER(6) CONSTRAINT stu_num REFERENCES STUDENT(student_num),
+                event_type_code NUMBER(6) CONSTRAINT type_code_ev REFERENCES EVENT(event_type_code));
+                
+                
                 
                 /* SEQUENCES */
                 CREATE SEQUENCE committee_committee_code_seq
@@ -243,7 +262,6 @@
                 VALUES(event_type_event_type_code_seq.NEXTVAL, 'Academic night');
                 
                 
-/* DROP
                 DROP TABLE COMMITTEE_DIM;
                 DROP TABLE SEMESTER_DIM;
                 DROP TABLE RESIDENCE_DIM;
@@ -258,7 +276,8 @@
                 DROP VIEW STUDENTS_VIEW ;
                 DROP VIEW ATTENDANCE_VIEW ;
                 DROP VIEW STUDENT_VIEW ;
-                */
+                
+                
 
 /* CREATE TABLES */
                 /* DIM */
@@ -351,5 +370,35 @@
                 SELECT event.event_type_code,event.event_description
                 FROM event ;
                 
+                
+               /* INSERT INTO ATTENDANCE_FACT(
+                year_year, sem_num, res_code, event_type_code, commitee_code, PERCENTANCE_ATTENDANCE*/
+                
+               INSERT INTO EVENT_TYPE_FACT(
+               f.year_year, s.sem_num, c.campus_code, f.event_type_code, f.TOTAL_EVENTS)
+               SELECT s.sem_num, EXTRACT(YEAR FROM s.start_date)
+               FROM EVENT f 
+               JOIN SEMESTER_DATE s 
+               on f.sem_num = s.sem_num
+               JOIN CAMPUS c
+               on f.campus_code = c.campus_code;
+               
+               
+               INSERT INTO EVENT_TYPE_FACT(
+               year_year, 
+               sem_num, campus_code,
+               event_type_code, TOTAL_EVENTS)
+               select 
+                extract(year from s.start_date),
+                s.sem_num,c.campus_code,e.event_type_code,
+                COUNT(e.event_type_code)
+               FROM EVENT e 
+               JOIN SEMESTER_DATE s
+               on e.sem_num = s.sem_num
+               JOIN committee c
+               on c.committee_code = e.committee_code
+               
+               group by extract(year from s.start_date), s.start_date, s.sem_num, c.campus_code, e.event_type_code;
+               
                
                 
