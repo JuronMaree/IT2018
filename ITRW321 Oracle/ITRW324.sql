@@ -25,7 +25,7 @@
                 campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
                 campus_description VARCHAR(20));
                 
-                CREATE TABLE RESIDENCE(
+        CREATE TABLE RESIDENCE(
                 res_code NUMBER(6) CONSTRAINT res_res_code PRIMARY KEY,
                 campus_code NUMBER(6) CONSTRAINT camp_cd REFERENCES CAMPUS(campus_code),
                 res_descript VARCHAR(20));
@@ -51,18 +51,13 @@
                 tot_stu_attend NUMBER(7),
                 event_description VARCHAR(20));
                 
-            
-                
-                
-                
-                
                 CREATE TABLE STUDENT(
                 student_num NUMBER(6) CONSTRAINT stud_student_num PRIMARY KEY,
                 res_code NUMBER(6) CONSTRAINT res_cd REFERENCES RESIDENCE(res_code),
                 student_fname VARCHAR(25),
                 student_lname VARCHAR(25));
                 
-                CREATE TABLE ATTENDANCE(
+        CREATE TABLE ATTENDANCE(
                 student_num NUMBER(6) CONSTRAINT stu_num REFERENCES STUDENT(student_num),
                 event_type_code NUMBER(6) CONSTRAINT type_code_ev REFERENCES EVENT(event_type_code));
                 
