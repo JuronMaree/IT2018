@@ -216,7 +216,42 @@
                 committee_code NUMBER(6) CONSTRAINT committee_committee_code222 REFERENCES COMMITTEE_DIM(committee_code),
                 res_code NUMBER(6) CONSTRAINT res_res_code222 REFERENCES RESIDENCE_DIM(res_code),
                 total_num_students NUMBER(3),PRIMARY KEY(year_year, committee_code, res_code)); 
+           
+              
+              
+               CREATE TABLE ATTENDANCE_FACT(
+                year_year NUMBER(6),
+                sem_num NUMBER(6) CONSTRAINT sem_sem_num111 REFERENCES SEMESTER_DIM(sem_num),
+                res_code NUMBER(6) CONSTRAINT res_res_code111 REFERENCES RESIDENCE_DIM(res_code),
+                event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code111 REFERENCES EVENT_DIM(event_type_code),
+                committee_code NUMBER(6) CONSTRAINT committee_committee_code111 REFERENCES COMMITTEE_DIM(committee_code),
+                percentage_attendance NUMBER(3), PRIMARY KEY(year_year, sem_num, res_code, event_type_code, committee_code ));
                 
+               
+                CREATE TABLE EVENT_TYPE_FACT(
+                year_year NUMBER(6),
+                sem_num NUMBER(6) CONSTRAINT sem_sem_num33 REFERENCES SEMESTER_DIM(sem_num),
+                campus_code NUMBER(6) CONSTRAINT campus_campus_code33 REFERENCES CAMPUS_DIM(campus_code),
+                event_type_code NUMBER(6) CONSTRAINT event_type_event_type_code33 REFERENCES EVENT_DIM(event_type_code),
+                total_events NUMBER(4), PRIMARY KEY(year_year, sem_num, campus_code, event_type_code));
+                
+                CREATE TABLE EVENT_FACT(
+                year_year NUMBER(6),
+                month_month NUMBER(6),
+                event_type_code NUMBER(6) CONSTRAINT type_code44 REFERENCES EVENT_DIM(event_type_code),
+                res_code NUMBER(6) CONSTRAINT res_res_code44 REFERENCES RESIDENCE_DIM(res_code),
+                tot_stu_attend_event NUMBER(6),
+                tot_events_stu_attend NUMBER(3),PRIMARY KEY(year_year, month_month,event_type_code,res_code));
+                
+                CREATE TABLE STUDENTS_FACT(
+                year_year NUMBER(6) ,
+                month_month NUMBER(6),
+                res_code NUMBER(6) CONSTRAINT res_res_code55 REFERENCES RESIDENCE_DIM(res_code),
+                event_type_code NUMBER(6) CONSTRAINT ent_type_ev_type_c55 REFERENCES EVENT_DIM(event_type_code),
+                student_num NUMBER(6) CONSTRAINT stnt_student_num55 REFERENCES STUDENT_DIM(student_num),
+                total_students_in_res NUMBER(3),PRIMARY KEY(year_year, month_month, res_code, event_type_code, student_num));
+                  
+                       
                 INSERT INTO student_fact(year_year,committee_code,res_code,total_num_students)
                     SELECT
                         EXTRACT(YEAR FROM event.event_date),
@@ -229,6 +264,7 @@
                     join event
                     on  committee.committee_code = event.committee_code
                     group by  EXTRACT(YEAR FROM event.event_date), committee.committee_code, residence.res_code;
+                    
                     
                 /*CREATE INDEX*/
                 CREATE INDEX CampusIndex
