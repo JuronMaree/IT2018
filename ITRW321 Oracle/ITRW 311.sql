@@ -1,3 +1,4 @@
+        /*ERD TABLES*/
         CREATE TABLE CAMPUS(
                 campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
                 campus_description VARCHAR(20));
@@ -152,18 +153,18 @@
                 INSERT INTO EVENT(event_type_code, event_description)
                 VALUES(event_type_event_type_code_seq.NEXTVAL, 'Tennis');
                 
-        /* INSERT INTO STUDENT*/
+                /* INSERT INTO STUDENT*/
                 
-                 INSERT INTO student(student_num, res_code,student_fname,student_lname)
+                INSERT INTO student(student_num, res_code,student_fname,student_lname)
                 VALUES(student_student_num_seq.NEXTVAL,1, 'Juron','Maree');
                  
-                
+                /*INSERT INTO ATTENDANCE*/
                 INSERT INTO ATTENDANCE(student_num, event_type_code)
                 VALUES(1, 1);
             
                 
                 
-                 /* DIM */
+                 /* DIM TABLES */
                 CREATE TABLE COMMITTEE_DIM(
                 committee_code NUMBER(6) CONSTRAINT committee_committee_code11 PRIMARY KEY,
                 committee_description VARCHAR(20));
@@ -191,32 +192,32 @@
                 student_lname VARCHAR(25));
                 
                 
-                 Insert into COMMITTEE_DIM
+                Insert into COMMITTEE_DIM
                 SELECT committee_code,committee_description
                 FROM COMMITTEE ;
               
-            Insert into residence_dim
+                Insert into residence_dim
                 SELECT res_code,res_descript
                 FROM residence ;
                 
-            Insert into campus_dim
+                Insert into campus_dim
                 SELECT campus.campus_code,campus.campus_description
                 FROM campus ;
                 
-            Insert into student_dim
+                Insert into student_dim
                 SELECT student.student_num,student.student_fname,student.student_lname
                 FROM student ;
                 
-            Insert into semester_dim
+                Insert into semester_dim
                 SELECT semester_date.sem_num,semester_date.start_date,semester_date.end_date
                 FROM SEMESTER_DATE ;
                 
-            Insert into event_dim
+                Insert into event_dim
                 SELECT event.event_type_code,event.event_description
                 FROM event ;
                 
-                
-          CREATE TABLE STUDENT_FACT(
+                /*FACT TABLES*/
+                CREATE TABLE STUDENT_FACT(
                 year_year DATE,
                 committee_code NUMBER(6) CONSTRAINT committee_committee_code222 REFERENCES COMMITTEE_DIM(committee_code),
                 res_code NUMBER(6) CONSTRAINT res_res_code222 REFERENCES RESIDENCE_DIM(res_code),
@@ -267,9 +268,71 @@
                 COMMIT;
                 END;
                 
+                
+                CREATE OR REPLACE PROCEDURE InsertNewCommittee(
+                    P_committee_code IN COMMITTEE.committee_code%TYPE,
+                    P_committee_description IN COMMITTEE.committee_description%TYPE)
+                IS
+                BEGIN
+                INSERT INTO COMMITTEE(committee_code, committee_description)
+                    VALUES(P_committee_code, P_committee_description);
+                INSERT INTO COMMITTEE_DIM(committee_code, committee_description)
+                    VALUES(P_committee_code, P_committee_description);
+                COMMIT;
+                END;
+                
+                CREATE OR REPLACE PROCEDURE InsertNewStudent(
+                    P_student_num IN STUDENT.student_num%TYPE,
+                    P_student_fname IN STUDENT.student_fname%TYPE,
+                    P_student_lname IN STUDENT.student_lname%TYPE)
+                IS
+                BEGIN
+                INSERT INTO STUDENT(student_num, student_fname, student_lname)
+                    VALUES(P_student_num, P_student_fname, P_student_lname);
+                INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
+                    VALUES(P_student_num, P_student_fname, P_student_lname);
+                COMMIT;
+                END;
+                
                 /*INSERT VALUES FOR PROCEDURES*/
                 BEGIN
                 InsertNewCampus(campus_campus_code_seq.NEXTVAL, '&campus_description');
+                END;
+                
+                BEGIN
+                InsertNewResidence(res_res_code_seq.NEXTVAL, '&res_descript');
+                END;
+                
+                BEGIN
+                InsertNewCommittee(committee_committee_code_seq.NEXTVAL, '&committee_description');
+                END;
+                
+                BEGIN
+                InsertNewStudent(student_student_num_seq.NEXTVAL, '&student_fname', '&student_lname');
+                END;
+                
+                /*Triggers*/
+                CREATE OR REPLACE TRIGGER ResidenceTrigger
+                AFTER INSERT OR UPDATE ON RESIDENCE
+                FOR EACH ROW
+                BEGIN
+                    UPDATE CAMPUS
+                    SET campus_description = campus_description 
+                    WHERE campus_code = :NEW.campus_code;
+                END;
+                
+                CREATE OR REPLACE PROCEDURE InsertNewResidence(
+                    P_res_code IN RESIDENCE.res_code%TYPE,
+                    P_campus_code IN RESIDENCE.campus_code%TYPE,
+                    P_res_descript IN RESIDENCE.res_descript%TYPE)
+                IS
+                BEGIN
+                INSERT INTO RESIDENCE(res_code, campus_code,  res_descript)
+                    VALUES(P_res_code, P_campus_code,  P_res_descript);
+                COMMIT;
+                END;
+                
+                BEGIN InsertNewResidence(6, 1, 'Karlien');
                 END;
                 
                 
