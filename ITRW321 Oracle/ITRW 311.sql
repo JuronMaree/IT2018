@@ -335,5 +335,55 @@
                 BEGIN InsertNewResidence(6, 1, 'Karlien');
                 END;
                 
+                /*SELECT*/
+                /*FILTER RES*/ 
+                SELECT r.res_descript, s.student_fname 
+                FROM STUDENT s 
+                JOIN RESIDENCE r 
+                on s.res_code = r.res_code 
+                WHERE UPPER(r.res_descript) LIKE UPPER('&Koshuis') 
+                ORDER BY s.student_fname DESC; 
                 
+                /*CREATE VIEW*/ 
+                CREATE VIEW STUDENTS_VIEW AS 
+                Select f.year_year, f.month_month, r.res_descript, e.event_description, s.student_fname, s.student_lname, f.total_students_in_res 
+                FROM STUDENTS_FACT f 
+                JOIN EVENT_DIM e 
+                on f.event_type_code = e.event_type_code 
+                JOIN RESIDENCE_DIM r 
+                on f.res_code = r.res_code  
+                JOIN STUDENT_DIM s 
+                on f.student_num = s.student_num; 
+                 
+                SELECT * FROM STUDENTS_VIEW; 
+                 
+                 
+                /*VIEW STATEMENTS*/ 
+                CREATE VIEW ATTENDANCE_VIEW AS 
+                Select  a.year_year, a.sem_num, r.res_descript, e.event_description, c.committee_description, a.percentage_attendance 
+                FROM ATTENDANCE_FACT a 
+                JOIN EVENT_DIM e 
+                on a.event_type_code = e.event_type_code 
+                JOIN RESIDENCE_DIM r 
+                on a.res_code = r.res_code  
+                JOIN COMMITTEE_DIM c 
+                on a.committee_code = c.committee_code; 
+                 
+                SELECT * FROM ATTENDANCE_VIEW; 
+                 
+                CREATE VIEW STUDENT_VIEW AS 
+                Select  s.year_year, c.committee_description, r.res_descript, s.total_num_students 
+                FROM STUDENT_FACT s 
+                JOIN RESIDENCE_DIM r 
+                on s.res_code = r.res_code  
+                JOIN COMMITTEE_DIM c 
+                on s.committee_code = c.committee_code; 
+                 
+                SELECT * FROM STUDENT_VIEW; 
+                
+                      
+                
+                
+                
+
                 
