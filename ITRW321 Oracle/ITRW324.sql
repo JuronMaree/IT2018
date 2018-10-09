@@ -467,7 +467,7 @@
                 EXTRACT(year from EVENT.event_date),
                 EXTRACT(month from EVENT.event_date);
             
-            where event.event_description like '%S%';
+           
             
             SELECT * from EVENT
                 where event.event_description like '%S%';
