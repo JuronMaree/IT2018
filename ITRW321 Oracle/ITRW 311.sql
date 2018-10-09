@@ -1,5 +1,4 @@
         CREATE TABLE CAMPUS(
-        
                 campus_code NUMBER(6) CONSTRAINT campus_campus_code PRIMARY KEY,
                 campus_description VARCHAR(20));
                 
@@ -236,4 +235,42 @@
                     on  committee.committee_code = event.committee_code
                     group by  EXTRACT(YEAR FROM event.event_date), committee.committee_code, residence.res_code;
                     
+                /*CREATE INDEX*/
+                CREATE INDEX CampusIndex
+                ON CAMPUS(campus_description);
+                
+                CREATE INDEX ResidenceIndex
+                ON RESIDENCE(res_descript);
+                
+                CREATE INDEX CommitteeIndex
+                ON COMMITTEE(committee_description);
+                
+                CREATE INDEX EventIndex
+                ON EVENT(event_description);
+                
+                CREATE UNIQUE INDEX StudentFNameIndex
+                ON STUDENT(student_fname);
+                
+                CREATE UNIQUE INDEX StudentLNameIndex
+                ON STUDENT(student_lname);
+                
+                /*CREATE PROCEDURES*/
+                CREATE OR REPLACE PROCEDURE InsertNewCampus(
+                    P_campus_code IN CAMPUS.campus_code%TYPE,
+                    P_campus_description IN CAMPUS.campus_description%TYPE)
+                IS
+                BEGIN
+                INSERT INTO CAMPUS(campus_code, campus_description)
+                    VALUES(P_campus_code, P_campus_description);
+                INSERT INTO CAMPUS_DIM(campus_code, campus_description)
+                    VALUES(P_campus_code, P_campus_description);
+                COMMIT;
+                END;
+                
+                /*INSERT VALUES FOR PROCEDURES*/
+                BEGIN
+                InsertNewCampus(campus_campus_code_seq.NEXTVAL, '&campus_description');
+                END;
+                
+                
                 
