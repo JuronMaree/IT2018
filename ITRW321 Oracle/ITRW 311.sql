@@ -32,7 +32,6 @@
                 student_lname VARCHAR(25));
                 
         CREATE TABLE ATTENDANCE(
-        
                 student_num NUMBER(6) CONSTRAINT stu_num REFERENCES STUDENT(student_num),
                 event_type_code NUMBER(6) CONSTRAINT type_code_ev REFERENCES EVENT(event_type_code));
                 
@@ -80,8 +79,8 @@
                 NOCYCLE;     
                 
                 
-          /*INSERT*/
-           /*Different Campus*/
+                 /*INSERT*/
+                 /*Different Campus*/
                 INSERT INTO CAMPUS(campus_code, campus_description)
                 VALUES(campus_campus_code_seq.NEXTVAL, 'NWU Potchefstroom');
                 
@@ -104,7 +103,6 @@
                  /*Different Residences*/
                 INSERT INTO RESIDENCE(res_code, campus_code,res_descript)
                 VALUES(res_res_code_seq.NEXTVAL,1, 'Caput');
-                
                 
                 
                 /*Different Committee*/
@@ -138,8 +136,6 @@
                 VALUES(sem_sem_num_seq.NEXTVAL, TO_DATE('03/JUL/2018'), TO_DATE('13/NOV/2018'));
                 
                 
-                 
-                
                   /*Different Events sport*/
                 INSERT INTO EVENT(event_type_code, sem_num,committee_code,event_date, event_description)
                 VALUES(event_type_event_type_code_seq.NEXTVAL,1,1,TO_DATE('15/JUL/2018'), 'Hockey');
@@ -154,7 +150,6 @@
                 VALUES(event_type_event_type_code_seq.NEXTVAL, 'Tennis');
                 
                 /* INSERT INTO STUDENT*/
-                
                 INSERT INTO student(student_num, res_code,student_fname,student_lname)
                 VALUES(student_student_num_seq.NEXTVAL,1, 'Juron','Maree');
                  
@@ -162,7 +157,6 @@
                 INSERT INTO ATTENDANCE(student_num, event_type_code)
                 VALUES(1, 1);
             
-                
                 
                  /* DIM TABLES */
                 CREATE TABLE COMMITTEE_DIM(
@@ -215,13 +209,7 @@
                 Insert into event_dim
                 SELECT event.event_type_code,event.event_description
                 FROM event ;
-    /*TOT HIER IS KLAAR GERUN!
-    
-    
-    
-    
-    
-    ]*/            
+      
                 /*FACT TABLES*/
                 CREATE TABLE STUDENT_FACT(
                 year_year DATE,
@@ -350,6 +338,7 @@
                 WHERE UPPER(r.res_descript) LIKE UPPER('&Koshuis') 
                 ORDER BY s.student_fname DESC; 
                 
+                /*Drop of Views*/
                 drop view STUDENTS_VIEW; 
                 drop view ATTENDANCE_VIEW; 
                 drop view STUDENT_VIEW;
@@ -393,67 +382,58 @@
                  
                 SELECT * FROM STUDENT_VIEW; 
                 
-                      
-                
-                            
-    /*Transactions STUDENT*/
-    INSERT INTO STUDENT( student_num, res_code, student_fname, student_lname)
-            VALUES ('&Student_num', '&Res_code', INITCAP('&Student_name'), INITCAP('&student_surname'));
+                    
+            /*Transactions STUDENT*/
+            INSERT INTO STUDENT( student_num, res_code, student_fname, student_lname)
+                VALUES ('&Student_num', '&Res_code', INITCAP('&Student_name'), INITCAP('&student_surname'));
            
-            UPDATE STUDENT 
-            SET student_fname= INITCAP('&New_name')  , student_lname= INITCAP('&New_Surname') 
-            WHERE student_num =('&Student_num');
-            
+                UPDATE STUDENT 
+                SET student_fname= INITCAP('&New_name')  , student_lname= INITCAP('&New_Surname') 
+                WHERE student_num =('&Student_num');
             COMMIT;
               
-            DELETE FROM STUDENT 
-            WHERE student_num =('&Student_num');   
-        ROLLBACK;
+                DELETE FROM STUDENT 
+                WHERE student_num =('&Student_num');   
+            ROLLBACK;
         
-  /*RESIDENCE*/      
-         INSERT INTO RESIDENCE( res_code, campus_code, res_descript)
-            VALUES ('&RESIDANCE_code', '&campus_code', INITCAP('&RESIDANCE_name'));
+             /*RESIDENCE*/      
+            INSERT INTO RESIDENCE( res_code, campus_code, res_descript)
+                VALUES ('&RESIDANCE_code', '&campus_code', INITCAP('&RESIDANCE_name'));
              
-            UPDATE RESIDENCE 
-            SET res_descript= INITCAP('&New_name') 
-            WHERE res_code =('&RES_CODE');
-            
+                UPDATE RESIDENCE 
+                SET res_descript= INITCAP('&New_name') 
+                WHERE res_code =('&RES_CODE');
             COMMIT;
               
-            DELETE FROM RESIDENCE 
-            WHERE res_descript = INITCAP('&RESIDANCE_name'); 
-          
-        ROLLBACK;
+                DELETE FROM RESIDENCE 
+                WHERE res_descript = INITCAP('&RESIDANCE_name'); 
+            ROLLBACK;
             
-/* COMMITTEE */
-
-INSERT INTO COMMITTEE( committee_code, res_code, committee_description)
-            VALUES ('&COMMITTEE_code', '&Res_code', INITCAP('&COMMITTEE_name'));
+            /* COMMITTEE */
+            INSERT INTO COMMITTEE( committee_code, res_code, committee_description)
+                VALUES ('&COMMITTEE_code', '&Res_code', INITCAP('&COMMITTEE_name'));
              
-            UPDATE COMMITTEE 
-            SET committee_description= INITCAP('&New_name') 
-            WHERE committee_code =('&COMMITTEE_CODE');
-            
+                UPDATE COMMITTEE 
+                SET committee_description= INITCAP('&New_name') 
+                WHERE committee_code =('&COMMITTEE_CODE');
             COMMIT; 
               
-            DELETE FROM COMMITTEE 
-            WHERE committee_description = INITCAP('&COMMITTEE_name'); 
-        ROLLBACK;
+                DELETE FROM COMMITTEE 
+                WHERE committee_description = INITCAP('&COMMITTEE_name'); 
+            ROLLBACK;
         
-        /* EVENT */
-
-INSERT INTO EVENT_DIM( event_type_code, event_description)
-            VALUES ('&EVENT_code', INITCAP('&EVENT_name'));
+             /* EVENT */
+            INSERT INTO EVENT_DIM( event_type_code, event_description)
+                VALUES ('&EVENT_code', INITCAP('&EVENT_name'));
              
-            UPDATE EVENT_DIM 
-            SET event_description= INITCAP('&NEWEVENT_name') 
-            WHERE event_type_code =('&EVENT_code');
-            
+                UPDATE EVENT_DIM 
+                SET event_description= INITCAP('&NEWEVENT_name') 
+                WHERE event_type_code =('&EVENT_code');
             COMMIT; 
               
-            DELETE FROM EVENT_DIM 
-            WHERE event_description = INITCAP('&EVENT_name'); 
-        ROLLBACK;
+                DELETE FROM EVENT_DIM 
+                WHERE event_description = INITCAP('&EVENT_name'); 
+            ROLLBACK;
                 
 
                 
