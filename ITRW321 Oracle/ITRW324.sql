@@ -407,9 +407,6 @@
                on s.res_code = r.res_code;
                
                
-               WHERE UPPER(s.committee_code) Like UPPER('&Committee');
-               GROUP BY c.committee_description;
-               
                 INSERT INTO STUDENT_FACT( year_year, committee_code, res_code)
                SELECT extract(year from s.start_date) AS "Year", c.committee_description AS "Committee", r.res_descript AS "Residence" 
                FROM SEMESTER_DATE s
@@ -417,20 +414,21 @@
                NATURAL JOIN RESIDENCE r;
                
                INSERT INTO ATTENDANCE_FACT (year_year, sem_num, res_code, committee_code, percentage_attended)
-               SELECT year_year, sem_num, res_descript, committee_description , percentage_attended
-               FROM
-               
+               SELECT extract(year From s.start_date), s.sem_num, r.res_descript, c.committee_description , null
+               FROM EVENT e
                JOIN COMMITTEE c
-               on s.committee_code = c.committee_code
+               on e.committee_code = c.committee_code
                JOIN RESIDENCE r
-               on s.res_code = r.res_code
+               on e.res_code = r.res_code
+                JOIN SEMESTER_DATE s
+               on e.sem_num = s.sem_num;
                
                
                
                INSERT INTO EVENT_TYPE_FACT(
-               e.year_year, 
-               s.sem_num, c.campus,
-               e.event_type_code, e.TOTAL_EVENTS)
+               year_year, 
+               sem_num, campus_code,
+               event_type_code, TOTAL_EVENTS)
                select 
                 extract(year from s.start_date),
                 s.sem_num,c.campus_code,e.event_type_code,
@@ -439,8 +437,7 @@
                JOIN SEMESTER_DATE s
                on e.sem_num = s.sem_num
                JOIN CAMPUS c
-               on c.campus_code = e.campus_code;
-               
+               on e.campus_code = c.campus_code
                group by extract(year from s.start_date), s.start_date, s.sem_num, c.campus_code, e.event_type_code;
                
                
@@ -477,3 +474,64 @@
                 where campus_code IS NOT NULL
             select * from campus    
             select * from event_fact
+            
+            
+            
+    /*Transactions STUDENT*/
+    INSERT INTO STUDENT( student_num, res_code, student_fname, student_lname)
+            VALUES ('&Student_num', null, INITCAP('&Student_name'), INITCAP('&student_surname'));
+           
+            UPDATE STUDENT 
+            SET student_fname= INITCAP('&New_name')  , student_lname= INITCAP('&New_Surname') 
+            WHERE student_num =('&Student_num');
+            
+            COMMIT;
+              
+            DELETE FROM STUDENT 
+            WHERE student_num =('&Student_num');   
+        ROLLBACK;
+        
+  /*RESIDENCE*/      
+         INSERT INTO RESIDENCE( res_code, campus_code, res_descript)
+            VALUES ('&RESIDANCE_code', null, INITCAP('&RESIDANCE_name'));
+             
+            UPDATE RESIDENCE 
+            SET res_descript= INITCAP('&New_name') 
+            WHERE res_code =('&RES_CODE');
+            
+            COMMIT;
+              
+            DELETE FROM RESIDENCE 
+            WHERE res_descript = INITCAP('&RESIDANCE_name'); 
+          
+        ROLLBACK;
+            
+/* COMMITTEE */
+
+INSERT INTO COMMITTEE( committee_code, res_code, committee_description)
+            VALUES ('&COMMITTEE_code', null, INITCAP('&COMMITTEE_name'));
+             
+            UPDATE COMMITTEE 
+            SET committee_description= INITCAP('&New_name') 
+            WHERE committee_code =('&COMMITTEE_CODE');
+            
+            COMMIT; 
+              
+            DELETE FROM COMMITTEE 
+            WHERE committee_description = INITCAP('&COMMITTEE_name'); 
+        ROLLBACK;
+        
+        /* EVENT */
+
+INSERT INTO EVENT_DIM( event_type_code, event_description)
+            VALUES ('&EVENT_code', INITCAP('&EVENT_name'));
+             
+            UPDATE EVENT_DIM 
+            SET event_description= INITCAP('&NEWEVENT_name') 
+            WHERE event_type_code =('&EVENT_code');
+            
+            COMMIT; 
+              
+            DELETE FROM EVENT_DIM 
+            WHERE event_description = INITCAP('&EVENT_name'); 
+        ROLLBACK;
