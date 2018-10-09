@@ -267,10 +267,56 @@
                 COMMIT;
                 END;
                 
+                CREATE OR REPLACE PROCEDURE InsertNewResidence(
+                    P_res_code IN RESIDENCE.res_code%TYPE,
+                    P_res_descript IN RESIDENCE.res_descript%TYPE)
+                IS
+                BEGIN
+                INSERT INTO RESIDENCE(res_code, res_descript)
+                    VALUES(P_res_code, P_res_descript);
+                INSERT INTO RESIDENCE_DIM(res_code,  res_descript)
+                    VALUES(P_res_code, P_res_descript);
+                COMMIT;
+                END;
+                
+                CREATE OR REPLACE PROCEDURE InsertNewCommittee(
+                    P_committee_code IN COMMITTEE.committee_code%TYPE,
+                    P_committee_description IN COMMITTEE.committee_description%TYPE)
+                IS
+                BEGIN
+                INSERT INTO COMMITTEE(committee_code, committee_description)
+                    VALUES(P_committee_code, P_committee_description);
+                INSERT INTO COMMITTEE_DIM(committee_code, committee_description)
+                    VALUES(P_committee_code, P_committee_description);
+                COMMIT;
+                END;
+                
+                CREATE OR REPLACE PROCEDURE InsertNewStudent(
+                    P_student_num IN STUDENT.student_num%TYPE,
+                    P_student_fname IN STUDENT.student_fname%TYPE,
+                    P_student_lname IN STUDENT.student_lname%TYPE)
+                IS
+                BEGIN
+                INSERT INTO STUDENT(student_num, student_fname, student_lname)
+                    VALUES(P_student_num, P_student_fname, P_student_lname);
+                INSERT INTO STUDENT_DIM(student_num, student_fname, student_lname)
+                    VALUES(P_student_num, P_student_fname, P_student_lname);
+                COMMIT;
+                END;
                 /*INSERT VALUES FOR PROCEDURES*/
                 BEGIN
                 InsertNewCampus(campus_campus_code_seq.NEXTVAL, '&campus_description');
                 END;
                 
+                BEGIN
+                InsertNewResidence(res_res_code_seq.NEXTVAL, '&res_descript');
+                END;
                 
+                BEGIN
+                InsertNewCommittee(committee_committee_code_seq.NEXTVAL, '&committee_description');
+                END;
+                
+                BEGIN
+                InsertNewStudent(student_student_num_seq.NEXTVAL, '&student_fname', '&student_lname');
+                END;
                 
