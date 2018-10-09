@@ -215,7 +215,13 @@
                 Insert into event_dim
                 SELECT event.event_type_code,event.event_description
                 FROM event ;
-                
+    /*TOT HIER IS KLAAR GERUN!
+    
+    
+    
+    
+    
+    ]*/            
                 /*FACT TABLES*/
                 CREATE TABLE STUDENT_FACT(
                 year_year DATE,
@@ -344,29 +350,35 @@
                 WHERE UPPER(r.res_descript) LIKE UPPER('&Koshuis') 
                 ORDER BY s.student_fname DESC; 
                 
+                drop view STUDENTS_VIEW; 
+                drop view ATTENDANCE_VIEW; 
+                drop view STUDENT_VIEW;
+                
+                
                 /*CREATE VIEW*/ 
                 CREATE VIEW STUDENTS_VIEW AS 
                 Select f.year_year, f.month_month, r.res_descript, e.event_description, s.student_fname, s.student_lname, f.total_students_in_res 
                 FROM STUDENTS_FACT f 
-                JOIN EVENT_DIM e 
+                JOIN EVENT  e 
                 on f.event_type_code = e.event_type_code 
-                JOIN RESIDENCE_DIM r 
+                JOIN RESIDENCE  r 
                 on f.res_code = r.res_code  
-                JOIN STUDENT_DIM s 
+                JOIN STUDENT s 
                 on f.student_num = s.student_num; 
                  
                 SELECT * FROM STUDENTS_VIEW; 
                  
+                
                  
                 /*VIEW STATEMENTS*/ 
                 CREATE VIEW ATTENDANCE_VIEW AS 
                 Select  a.year_year, a.sem_num, r.res_descript, e.event_description, c.committee_description, a.percentage_attendance 
                 FROM ATTENDANCE_FACT a 
-                JOIN EVENT_DIM e 
+                JOIN EVENT e 
                 on a.event_type_code = e.event_type_code 
-                JOIN RESIDENCE_DIM r 
+                JOIN RESIDENCE r 
                 on a.res_code = r.res_code  
-                JOIN COMMITTEE_DIM c 
+                JOIN COMMITTEE c 
                 on a.committee_code = c.committee_code; 
                  
                 SELECT * FROM ATTENDANCE_VIEW; 
@@ -374,16 +386,74 @@
                 CREATE VIEW STUDENT_VIEW AS 
                 Select  s.year_year, c.committee_description, r.res_descript, s.total_num_students 
                 FROM STUDENT_FACT s 
-                JOIN RESIDENCE_DIM r 
+                JOIN RESIDENCE r 
                 on s.res_code = r.res_code  
-                JOIN COMMITTEE_DIM c 
+                JOIN COMMITTEE c 
                 on s.committee_code = c.committee_code; 
                  
                 SELECT * FROM STUDENT_VIEW; 
                 
                       
                 
-                
+                            
+    /*Transactions STUDENT*/
+    INSERT INTO STUDENT( student_num, res_code, student_fname, student_lname)
+            VALUES ('&Student_num', '&Res_code', INITCAP('&Student_name'), INITCAP('&student_surname'));
+           
+            UPDATE STUDENT 
+            SET student_fname= INITCAP('&New_name')  , student_lname= INITCAP('&New_Surname') 
+            WHERE student_num =('&Student_num');
+            
+            COMMIT;
+              
+            DELETE FROM STUDENT 
+            WHERE student_num =('&Student_num');   
+        ROLLBACK;
+        
+  /*RESIDENCE*/      
+         INSERT INTO RESIDENCE( res_code, campus_code, res_descript)
+            VALUES ('&RESIDANCE_code', '&campus_code', INITCAP('&RESIDANCE_name'));
+             
+            UPDATE RESIDENCE 
+            SET res_descript= INITCAP('&New_name') 
+            WHERE res_code =('&RES_CODE');
+            
+            COMMIT;
+              
+            DELETE FROM RESIDENCE 
+            WHERE res_descript = INITCAP('&RESIDANCE_name'); 
+          
+        ROLLBACK;
+            
+/* COMMITTEE */
+
+INSERT INTO COMMITTEE( committee_code, res_code, committee_description)
+            VALUES ('&COMMITTEE_code', '&Res_code', INITCAP('&COMMITTEE_name'));
+             
+            UPDATE COMMITTEE 
+            SET committee_description= INITCAP('&New_name') 
+            WHERE committee_code =('&COMMITTEE_CODE');
+            
+            COMMIT; 
+              
+            DELETE FROM COMMITTEE 
+            WHERE committee_description = INITCAP('&COMMITTEE_name'); 
+        ROLLBACK;
+        
+        /* EVENT */
+
+INSERT INTO EVENT_DIM( event_type_code, event_description)
+            VALUES ('&EVENT_code', INITCAP('&EVENT_name'));
+             
+            UPDATE EVENT_DIM 
+            SET event_description= INITCAP('&NEWEVENT_name') 
+            WHERE event_type_code =('&EVENT_code');
+            
+            COMMIT; 
+              
+            DELETE FROM EVENT_DIM 
+            WHERE event_description = INITCAP('&EVENT_name'); 
+        ROLLBACK;
                 
 
                 
