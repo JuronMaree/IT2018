@@ -1,0 +1,21 @@
+const express = require('express');
+const logger = require('morgan');
+const app = express();
+const template = require('jade').compileFile(__dirname + '/source/template/homepage.jade')
+
+app.use(logger('dev'))
+app.use(express.static(__dirname + '/static'))
+
+app.get('/web' , (req, res) => {
+    try{
+        const html = template ({title: 'Home'})
+        res.send(html)
+    }
+    catch(e){
+        next(e)
+    }
+});
+
+app.listen('3000', () =>{
+    console.log('Server started on port 3000');
+});
